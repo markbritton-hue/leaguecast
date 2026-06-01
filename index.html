@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LeagueCast — Season Standings</title>
+  <link rel="icon" href="livinlogo.png" type="image/png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -53,7 +54,7 @@
   <main class="p-4 sm:p-6 max-w-3xl mx-auto" x-data="seasonBoard" x-init="init()">
 
     <div class="text-center pt-5 pb-4">
-      <div class="text-4xl mb-1">🎣</div>
+      <img src="livinlogo.png" alt="LeagueCast Logo" class="w-16 h-16 mx-auto mb-3">
       <h1 class="text-3xl sm:text-4xl font-black text-amber-400 tracking-tight">LeagueCast</h1>
       <p class="text-slate-400 mt-1 text-xs sm:text-sm" x-text="seasonSummary"></p>
     </div>
