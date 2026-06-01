@@ -1,0 +1,29 @@
+name: Deploy via SFTP to IONOS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sftp-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install lftp
+        run: sudo apt-get install -y lftp
+
+      - name: Prepare deployment files
+        run: |
+          mkdir -p deploy
+          rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='deploy' ./ deploy/
+
+      - name: Upload files to IONOS via SFTP
+        run: |
+          lftp -e "set sftp:auto-confirm yes; \
+                   set net:max-retries 3; \
+                   open -u ${{ secrets.SFTP_USERNAME }},${{ secrets.SFTP_PASSWORD }} sftp://${{ secrets.SFTP_HOST }}; \
+                   mirror -R --delete --exclude='^\.git' --exclude='^\.github' deploy/ /leaguecast/; \
+                   bye"
