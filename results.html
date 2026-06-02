@@ -189,11 +189,17 @@
       const db = firebase.firestore();
 
       function assignRanks(sorted) {
-        let prev = null, prevRank = 1;
+        let prevWeight = null, prevBigFish = null, prevRank = 1;
         return sorted.map((entry, i) => {
-          if (i === 0) { prev = entry.totalWeight; prevRank = 1; return { ...entry, rank: '1' }; }
-          if (entry.totalWeight === prev) return { ...entry, rank: 'T-' + prevRank };
-          prevRank = i + 1; prev = entry.totalWeight;
+          if (i === 0) {
+            prevWeight = entry.totalWeight; prevBigFish = entry.bigFish; prevRank = 1;
+            return { ...entry, rank: '1' };
+          }
+          // True tie: same total weight AND same big fish
+          if (entry.totalWeight === prevWeight && entry.bigFish === prevBigFish) {
+            return { ...entry, rank: 'T-' + prevRank };
+          }
+          prevRank = i + 1; prevWeight = entry.totalWeight; prevBigFish = entry.bigFish;
           return { ...entry, rank: String(i + 1) };
         });
       }
