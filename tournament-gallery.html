@@ -85,14 +85,11 @@
     <!-- Photo grid -->
     <div x-show="!loading && photos.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
       <template x-for="(photo, idx) in photos" :key="idx">
-        <div class="rounded-lg overflow-hidden bg-navy-800 relative group">
-          <img @click="openLightbox(idx)" :src="photo.base64" alt="Tournament photo" class="w-full h-48 object-cover cursor-pointer hover:opacity-80 transition-opacity">
+        <div @click="openLightbox(idx)" class="cursor-pointer rounded-lg overflow-hidden bg-navy-800 hover:opacity-80 transition-opacity">
+          <img :src="photo.base64" alt="Tournament photo" class="w-full h-48 object-cover">
           <div class="p-2 text-xs text-slate-400">
             <div class="font-semibold text-slate-200" x-text="photo.uploadedBy"></div>
           </div>
-          <button x-show="isAdmin" @click="deletePhoto(photo.id)" class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm opacity-0 group-hover:opacity-100 transition-opacity">
-            ✕
-          </button>
         </div>
       </template>
     </div>
@@ -130,36 +127,37 @@
         uploadStatus: '',
         lightboxOpen: false,
         currentPhotoIdx: 0,
-        isAdmin: false,
 
-        init() {
-          firebase.auth().onAuthStateChanged(user => {
-            this.isAdmin = !!user;
-          });
-
+        async init() {
           if (!tournamentId) {
             alert('No tournament specified');
             window.location.href = 'schedule.html';
             return;
           }
+          await this.loadTournament();
+          await this.loadPhotos();
+        },
 
-          db.collection('tournaments').doc(tournamentId).get().then(doc => {
+        async loadTournament() {
+          try {
+            const doc = await db.collection('tournaments').doc(tournamentId).get();
             if (doc.exists) {
               this.tournamentName = doc.data().name || '';
             }
-          });
+          } catch (err) {
+            console.error('Error loading tournament:', err);
+          }
+        },
 
-          db.collection('tournaments').doc(tournamentId).collection('photos').onSnapshot(snap => {
-            this.photos = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => {
-              const aTime = a.timestamp?.toDate?.() || new Date(0);
-              const bTime = b.timestamp?.toDate?.() || new Date(0);
-              return bTime - aTime;
-            });
+        async loadPhotos() {
+          try {
+            const snap = await db.collection('tournaments').doc(tournamentId).collection('photos').orderBy('timestamp', 'desc').get();
+            this.photos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             this.loading = false;
-          }, err => {
+          } catch (err) {
             console.error('Error loading photos:', err);
             this.loading = false;
-          });
+          }
         },
 
         handleFileSelect(event) {
@@ -222,17 +220,6 @@
 
         closeLightbox() {
           this.lightboxOpen = false;
-        },
-
-        async deletePhoto(photoId) {
-          if (!confirm('Delete this photo?')) return;
-          try {
-            await db.collection('tournaments').doc(tournamentId).collection('photos').doc(photoId).delete();
-            await this.loadPhotos();
-          } catch (err) {
-            alert('Error deleting photo: ' + err.message);
-            console.error(err);
-          }
         }
       }));
     });
