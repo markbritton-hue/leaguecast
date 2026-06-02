@@ -86,11 +86,15 @@
             </a>
           </div>
 
-          <!-- View results button -->
-          <div class="mt-3">
+          <!-- View results & gallery buttons -->
+          <div class="mt-3 flex gap-2">
             <a :href="`results.html?id=${t.id}`"
               class="inline-block bg-navy-700 hover:bg-navy-600 text-slate-200 px-4 py-2 rounded-lg text-sm font-semibold transition-colors border border-navy-600">
               View Results →
+            </a>
+            <a :href="`tournament-gallery.html?id=${t.id}`"
+              class="inline-block bg-amber-500/10 hover:bg-amber-500/25 text-amber-400 px-4 py-2 rounded-lg text-sm font-semibold transition-colors border border-amber-500/40 hover:border-amber-400">
+              📸 Gallery
             </a>
           </div>
         </div>

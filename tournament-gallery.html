@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tournament Gallery</title>
+  <link rel="icon" href="LTD-transparent.png" type="image/png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            navy: { 950: '#060a14', 900: '#0a0f1e', 800: '#0d1530', 700: '#1a2444', 600: '#243060' },
+            forest: { 700: '#1a4731', 600: '#1e5c3a', 500: '#2d7a52', 400: '#3a9966' },
+            amber: { 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706' }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+</head>
+<body class="bg-navy-900 text-slate-100 min-h-screen flex flex-col">
+
+  <script src="./firebase-init.js"></script>
+
+  <nav class="bg-navy-800 border-b border-forest-700 px-4 py-3 flex items-center justify-between">
+    <a href="index.html" class="text-amber-400 font-bold text-xl">🎣 LeagueCast</a>
+    <a href="schedule.html" class="bg-navy-700 hover:bg-navy-600 text-slate-200 hover:text-amber-400 px-4 py-2 rounded-lg font-semibold text-sm border border-navy-600 hover:border-amber-400 transition-colors">← Schedule</a>
+  </nav>
+
+  <main class="flex-1 p-4 max-w-4xl mx-auto w-full" x-data="galleryPage" x-init="init()">
+
+    <div class="pt-4 mb-6">
+      <h1 class="text-3xl font-bold text-amber-400" x-text="tournamentName || 'Tournament Gallery'"></h1>
+    </div>
+
+    <!-- Upload button -->
+    <button @click="showUpload = !showUpload" class="mb-4 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+      📸 Add Photos
+    </button>
+
+    <!-- Upload form -->
+    <div x-show="showUpload" class="bg-navy-800 border border-navy-700 rounded-xl p-4 mb-6">
+      <h2 class="text-lg font-bold text-amber-400 mb-4">Upload Photos</h2>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-sm text-slate-300 mb-2">Your Name</label>
+          <input x-model="uploaderName" type="text" placeholder="John Doe" class="w-full px-3 py-2 bg-navy-700 border border-navy-600 rounded-lg text-white placeholder-slate-500">
+        </div>
+        <div>
+          <label class="block text-sm text-slate-300 mb-2">Select Photos</label>
+          <input @change="handleFileSelect" type="file" multiple accept="image/*" class="w-full px-3 py-2 bg-navy-700 border border-navy-600 rounded-lg text-slate-300 cursor-pointer">
+          <p class="text-sm text-slate-400 mt-1" x-text="selectedCount > 0 ? `${selectedCount} photo(s) selected` : ''"></p>
+        </div>
+        <div class="flex gap-2">
+          <button @click="uploadPhotos()" :disabled="selectedCount === 0 || uploading" class="flex-1 bg-forest-600 hover:bg-forest-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-lg transition-colors">
+            <span x-text="uploading ? 'Uploading...' : 'Upload'"></span>
+          </button>
+          <button @click="showUpload = false" class="flex-1 bg-navy-700 hover:bg-navy-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">Cancel</button>
+        </div>
+        <div x-show="uploadStatus" :class="uploadStatus.includes('Success') ? 'text-forest-400' : 'text-red-400'" class="text-sm mt-2" x-text="uploadStatus"></div>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div x-show="loading" class="flex justify-center py-12">
+      <div class="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+    <!-- No photos -->
+    <div x-show="!loading && photos.length === 0" class="text-center py-16 text-slate-400">
+      <div class="text-5xl mb-4">📸</div>
+      <p class="text-lg">No photos yet. Be the first to upload!</p>
+    </div>
+
+    <!-- Photo grid -->
+    <div x-show="!loading && photos.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      <template x-for="(photo, idx) in photos" :key="idx">
+        <div @click="openLightbox(idx)" class="cursor-pointer rounded-lg overflow-hidden bg-navy-800 hover:opacity-80 transition-opacity">
+          <img :src="photo.base64" alt="Tournament photo" class="w-full h-48 object-cover">
+          <div class="p-2 text-xs text-slate-400">
+            <div class="font-semibold text-slate-200" x-text="photo.uploadedBy"></div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </main>
+
+  <!-- Lightbox -->
+  <div x-show="lightboxOpen" @click="closeLightbox()" class="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+    <div @click.stop class="relative">
+      <img :src="photos[currentPhotoIdx]?.base64" alt="Full size" class="max-w-full max-h-[90vh] rounded-lg">
+      <button @click="closeLightbox()" class="absolute -top-10 right-0 text-white text-3xl font-bold hover:text-amber-400">✕</button>
+      <div class="text-center text-white text-sm mt-2">
+        <span x-text="`${currentPhotoIdx + 1} of ${photos.length}`"></span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('alpine:init', () => {
+      const db = firebase.firestore();
+      const params = new URLSearchParams(window.location.search);
+      const tournamentId = params.get('id');
+
+      Alpine.data('galleryPage', () => ({
+        tournamentId,
+        tournamentName: '',
+        photos: [],
+        loading: true,
+        showUpload: false,
+        uploaderName: '',
+        selectedFiles: [],
+        selectedCount: 0,
+        uploading: false,
+        uploadStatus: '',
+        lightboxOpen: false,
+        currentPhotoIdx: 0,
+
+        async init() {
+          if (!tournamentId) {
+            alert('No tournament specified');
+            window.location.href = 'schedule.html';
+            return;
+          }
+          await this.loadTournament();
+          await this.loadPhotos();
+        },
+
+        async loadTournament() {
+          try {
+            const doc = await db.collection('tournaments').doc(tournamentId).get();
+            if (doc.exists) {
+              this.tournamentName = doc.data().name || '';
+            }
+          } catch (err) {
+            console.error('Error loading tournament:', err);
+          }
+        },
+
+        async loadPhotos() {
+          try {
+            const snap = await db.collection('tournaments').doc(tournamentId).collection('photos').orderBy('timestamp', 'desc').get();
+            this.photos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            this.loading = false;
+          } catch (err) {
+            console.error('Error loading photos:', err);
+            this.loading = false;
+          }
+        },
+
+        handleFileSelect(event) {
+          this.selectedFiles = Array.from(event.target.files);
+          this.selectedCount = this.selectedFiles.length;
+        },
+
+        async uploadPhotos() {
+          if (!this.uploaderName.trim()) {
+            this.uploadStatus = 'Please enter your name';
+            return;
+          }
+          if (this.selectedFiles.length === 0) return;
+
+          this.uploading = true;
+          this.uploadStatus = '';
+          let successCount = 0;
+
+          try {
+            for (const file of this.selectedFiles) {
+              const reader = new FileReader();
+              await new Promise((resolve, reject) => {
+                reader.onload = async (e) => {
+                  try {
+                    const base64 = e.target.result;
+                    await db.collection('tournaments').doc(tournamentId).collection('photos').add({
+                      base64,
+                      uploadedBy: this.uploaderName,
+                      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                      filename: file.name
+                    });
+                    successCount++;
+                    resolve();
+                  } catch (err) {
+                    reject(err);
+                  }
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+              });
+            }
+            this.uploadStatus = `✓ Success! ${successCount} photo(s) uploaded`;
+            this.uploaderName = '';
+            this.selectedFiles = [];
+            this.selectedCount = 0;
+            await this.loadPhotos();
+            setTimeout(() => { this.showUpload = false; }, 1500);
+          } catch (err) {
+            this.uploadStatus = `Error uploading: ${err.message}`;
+            console.error(err);
+          } finally {
+            this.uploading = false;
+          }
+        },
+
+        openLightbox(idx) {
+          this.currentPhotoIdx = idx;
+          this.lightboxOpen = true;
+        },
+
+        closeLightbox() {
+          this.lightboxOpen = false;
+        }
+      }));
+    });
+  </script>
+</body>
+</html>
