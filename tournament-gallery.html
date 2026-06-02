@@ -28,7 +28,6 @@
 <body class="bg-navy-900 text-slate-100 min-h-screen flex flex-col">
 
   <script src="./firebase-init.js"></script>
-  <script src="./auth-guard.js"></script>
 
   <nav class="bg-navy-800 border-b border-forest-700 px-4 py-3 flex items-center justify-between">
     <a href="index.html" class="text-amber-400 font-bold text-xl">🎣 LeagueCast</a>
@@ -160,8 +159,12 @@
 
         async loadPhotos() {
           try {
-            const snap = await db.collection('tournaments').doc(tournamentId).collection('photos').orderBy('timestamp', 'desc').get();
-            this.photos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            const snap = await db.collection('tournaments').doc(tournamentId).collection('photos').get();
+            this.photos = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => {
+              const aTime = a.timestamp?.toDate?.() || new Date(0);
+              const bTime = b.timestamp?.toDate?.() || new Date(0);
+              return bTime - aTime;
+            });
             this.loading = false;
           } catch (err) {
             console.error('Error loading photos:', err);
