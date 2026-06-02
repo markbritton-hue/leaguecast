@@ -236,8 +236,9 @@
             anglers: `${t.angler1.name} & ${t.angler2.name}`,
             weighin: weighinByTeam[t.id],
             totalWeight: weighinByTeam[t.id].totalWeight || 0,
+            bigFish: weighinByTeam[t.id].bigFish || 0,
             isBigFish: false
-          })).sort((a, b) => b.totalWeight - a.totalWeight);
+          })).sort((a, b) => b.totalWeight - a.totalWeight || b.bigFish - a.bigFish);
 
           const ranked = assignRanks(withWeighin);
           const maxBigFish = Math.max(0, ...weighins.map(w => w.bigFish || 0));
