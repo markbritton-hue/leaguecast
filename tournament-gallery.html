@@ -91,7 +91,7 @@
           <div class="p-2 text-xs text-slate-400">
             <div class="font-semibold text-slate-200" x-text="photo.uploadedBy"></div>
           </div>
-          <button x-show="isAdmin" @click="deletePhoto(photo.id)" class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+          <button x-show="isAdmin" @click.stop="deletePhoto(photo.id)" class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold shadow-lg">🗑️</button>
         </div>
       </template>
     </div>
