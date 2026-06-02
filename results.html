@@ -93,7 +93,8 @@
         <h3 class="text-sm font-bold text-amber-400 uppercase tracking-wider mb-3">💰 Prize Payouts</h3>
         <div class="text-xs text-slate-500 mb-3">
           <span x-text="weighedInCount + ' team' + (weighedInCount !== 1 ? 's' : '') + ' × $40 = $' + totalCollected.toFixed(2)"></span>
-          <div class="text-xs text-slate-600 mt-1">Payout pool (80%): $<span x-text="totalPot.toFixed(2)"></span></div>
+          <div class="mt-1">− <span x-text="weighedInCount + ' × $5 = $' + totalDeductions.toFixed(2)"></span> (per team fee)</div>
+          <div class="mt-1">Payout pool (80% of remainder): $<span x-text="totalPot.toFixed(2)"></span></div>
         </div>
         <div class="space-y-2">
           <template x-if="ranked[0] && ranked[0].weighin">
@@ -286,8 +287,11 @@
         get totalCollected() {
           return this.weighedInCount * 40;
         },
+        get totalDeductions() {
+          return this.weighedInCount * 5;
+        },
         get totalPot() {
-          return this.totalCollected * 0.8;
+          return (this.totalCollected - this.totalDeductions) * 0.8;
         }
       }));
     });
