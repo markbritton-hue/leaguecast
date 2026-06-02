@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,6 +24,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <script src="./theme.js"></script>
 </head>
 <body class="bg-navy-900 text-slate-100 min-h-screen">
 
@@ -32,7 +33,10 @@
   <!-- Nav -->
   <nav class="bg-navy-800 border-b border-forest-700 px-4 py-3 flex items-center justify-between">
     <a href="index.html" class="text-amber-400 font-bold text-base">🎣 LeagueCast</a>
-    <a href="index.html" class="bg-navy-700 hover:bg-navy-600 text-slate-200 hover:text-amber-400 px-4 py-2 rounded-lg font-semibold text-sm border border-navy-600 hover:border-amber-400 transition-colors">← Home</a>
+    <div class="flex items-center gap-2">
+      <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-navy-700 transition-colors text-xl">☀️</button>
+      <a href="index.html" class="bg-navy-700 hover:bg-navy-600 text-slate-200 hover:text-amber-400 px-4 py-2 rounded-lg font-semibold text-sm border border-navy-600 hover:border-amber-400 transition-colors">← Home</a>
+    </div>
   </nav>
 
   <main class="p-4 max-w-2xl mx-auto" x-data="tournamentResults" x-init="init()">
