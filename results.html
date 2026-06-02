@@ -103,7 +103,7 @@
                 <div class="text-xs text-amber-400 font-semibold">1st Place</div>
                 <div class="text-white font-bold text-sm" x-text="ranked[0].teamName"></div>
               </div>
-              <div class="text-amber-400 font-black text-base" x-text="'$' + (totalPot * 0.5).toFixed(3)"></div>
+              <div class="text-amber-400 font-black text-base" x-text="'$' + Math.round(totalPot * 0.5)"></div>
             </div>
           </template>
           <template x-if="ranked[1] && ranked[1].weighin">
@@ -112,7 +112,7 @@
                 <div class="text-xs text-slate-400 font-semibold">2nd Place</div>
                 <div class="text-white font-bold text-sm" x-text="ranked[1].teamName"></div>
               </div>
-              <div class="text-slate-300 font-black text-base" x-text="'$' + (totalPot * 0.3).toFixed(3)"></div>
+              <div class="text-slate-300 font-black text-base" x-text="'$' + Math.round(totalPot * 0.3)"></div>
             </div>
           </template>
           <template x-if="ranked[2] && ranked[2].weighin">
@@ -121,7 +121,7 @@
                 <div class="text-xs text-orange-400 font-semibold">3rd Place</div>
                 <div class="text-white font-bold text-sm" x-text="ranked[2].teamName"></div>
               </div>
-              <div class="text-orange-300 font-black text-base" x-text="'$' + (totalPot * 0.2).toFixed(3)"></div>
+              <div class="text-orange-300 font-black text-base" x-text="'$' + Math.round(totalPot * 0.2)"></div>
             </div>
           </template>
         </div>
