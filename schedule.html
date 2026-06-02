@@ -98,8 +98,11 @@
               View Results →
             </a>
             <a :href="`tournament-gallery.html?id=${t.id}`"
-              class="inline-block bg-amber-500/10 hover:bg-amber-500/25 text-amber-400 px-4 py-2 rounded-lg text-sm font-semibold transition-colors border border-amber-500/40 hover:border-amber-400">
+              class="inline-flex items-center gap-2 bg-amber-500/10 hover:bg-amber-500/25 text-amber-400 px-4 py-2 rounded-lg text-sm font-semibold transition-colors border border-amber-500/40 hover:border-amber-400">
               📸 Gallery
+              <span x-show="photoCounts[t.id] > 0"
+                class="bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full leading-none"
+                x-text="photoCounts[t.id]"></span>
             </a>
           </div>
         </div>
@@ -113,10 +116,11 @@
 
       Alpine.data('schedulePage', () => ({
         tournaments: [],
+        photoCounts: {},
         loading: true,
 
-        init() {
-          db.collection('tournaments').orderBy('date', 'asc').onSnapshot(snap => {
+        async init() {
+          db.collection('tournaments').orderBy('date', 'asc').onSnapshot(async snap => {
             const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             this.tournaments = all.sort((a, b) => {
               const aDate = a.date?.toDate?.() || new Date(a.date);
@@ -124,6 +128,13 @@
               return aDate - bDate;
             });
             this.loading = false;
+            // Load photo counts for all tournaments
+            const counts = {};
+            await Promise.all(this.tournaments.map(async t => {
+              const snap = await db.collection('tournaments').doc(t.id).collection('photos').get();
+              counts[t.id] = snap.size;
+            }));
+            this.photoCounts = counts;
           });
         },
 
