@@ -96,34 +96,33 @@
         </div>
       </template>
     </div>
+    <!-- Lightbox -->
+    <template x-if="lightboxOpen && photos[currentPhotoIdx]">
+      <div class="fixed inset-0 bg-black z-50 flex flex-col"
+           @keydown.escape.window="closeLightbox()"
+           @keydown.arrow-left.window="prevPhoto()"
+           @keydown.arrow-right.window="nextPhoto()">
+        <!-- Top bar -->
+        <div class="flex items-center justify-between px-4 py-3 flex-shrink-0">
+          <span class="text-white/60 text-sm" x-text="`${currentPhotoIdx + 1} of ${photos.length}`"></span>
+          <span class="text-white/80 text-sm font-semibold" x-text="photos[currentPhotoIdx].uploadedBy"></span>
+          <button @click="closeLightbox()" class="text-white text-3xl font-bold leading-none w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/20">✕</button>
+        </div>
+        <!-- Image -->
+        <div class="flex-1 flex items-center justify-center relative overflow-hidden">
+          <img :src="photos[currentPhotoIdx].base64" alt="Full size"
+               class="max-w-full max-h-full object-contain select-none"
+               style="touch-action: pinch-zoom;">
+          <!-- Prev -->
+          <button x-show="photos.length > 1" @click="prevPhoto()"
+                  class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white text-2xl w-12 h-12 rounded-full flex items-center justify-center">‹</button>
+          <!-- Next -->
+          <button x-show="photos.length > 1" @click="nextPhoto()"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white text-2xl w-12 h-12 rounded-full flex items-center justify-center">›</button>
+        </div>
+      </div>
+    </template>
   </main>
-
-  <!-- Lightbox -->
-  <template x-if="lightboxOpen && photos[currentPhotoIdx]">
-    <div class="fixed inset-0 bg-black z-50 flex flex-col"
-         @keydown.escape.window="closeLightbox()"
-         @keydown.arrow-left.window="prevPhoto()"
-         @keydown.arrow-right.window="nextPhoto()">
-      <!-- Top bar -->
-      <div class="flex items-center justify-between px-4 py-3 flex-shrink-0">
-        <span class="text-white/60 text-sm" x-text="`${currentPhotoIdx + 1} of ${photos.length}`"></span>
-        <span class="text-white/80 text-sm font-semibold" x-text="photos[currentPhotoIdx].uploadedBy"></span>
-        <button @click="closeLightbox()" class="text-white text-3xl font-bold leading-none w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/20">✕</button>
-      </div>
-      <!-- Image -->
-      <div class="flex-1 flex items-center justify-center relative overflow-hidden">
-        <img :src="photos[currentPhotoIdx].base64" alt="Full size"
-             class="max-w-full max-h-full object-contain select-none"
-             style="touch-action: pinch-zoom;">
-        <!-- Prev -->
-        <button x-show="photos.length > 1" @click="prevPhoto()"
-                class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white text-2xl w-12 h-12 rounded-full flex items-center justify-center">‹</button>
-        <!-- Next -->
-        <button x-show="photos.length > 1" @click="nextPhoto()"
-                class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white text-2xl w-12 h-12 rounded-full flex items-center justify-center">›</button>
-      </div>
-    </div>
-  </template>
 
   <script>
     document.addEventListener('alpine:init', () => {
