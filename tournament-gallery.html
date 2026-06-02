@@ -110,6 +110,11 @@
   </template>
 
   <script>
+    let isAdminGlobal = false;
+    firebase.auth().onAuthStateChanged(user => {
+      isAdminGlobal = !!user;
+    });
+
     document.addEventListener('alpine:init', () => {
       const db = firebase.firestore();
       const params = new URLSearchParams(window.location.search);
@@ -128,12 +133,9 @@
         uploadStatus: '',
         lightboxOpen: false,
         currentPhotoIdx: 0,
-        isAdmin: false,
+        isAdmin: isAdminGlobal,
 
         async init() {
-          firebase.auth().onAuthStateChanged(user => {
-            this.isAdmin = !!user;
-          });
           if (!tournamentId) {
             alert('No tournament specified');
             window.location.href = 'schedule.html';
