@@ -251,7 +251,12 @@
         }
       }));
     }
-    registerGalleryData();
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', registerGalleryData);
+    } else {
+      registerGalleryData();
+    }
   </script>
 </body>
 </html>
