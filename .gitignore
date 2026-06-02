@@ -1,0 +1,8 @@
+.env
+.env.local
+.env.*.local
+secrets.*
+config.local.*
+node_modules/
+deploy/
+server.log
