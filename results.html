@@ -242,7 +242,7 @@
             anglers: `${t.angler1.name} & ${t.angler2.name}`,
             weighin: weighinByTeam[t.id],
             totalWeight: weighinByTeam[t.id].totalWeight || 0,
-            bigFish: weighinByTeam[t.id].bigFish || 0,
+            bigFish: weighinByTeam[t.id].bigFish || weighinByTeam[t.id].bigBassWeight || 0,
             isBigFish: false
           })).sort((a, b) => b.totalWeight - a.totalWeight || b.bigFish - a.bigFish);
 
