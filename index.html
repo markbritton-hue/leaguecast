@@ -27,7 +27,7 @@
   <link rel="stylesheet" href="./light-mode.css">
   <script src="./theme.js"></script>
 </head>
-<body class="bg-navy-900 text-slate-100 min-h-screen" style="background-image: url('https://images.unsplash.com/photo-1551942296-97384c850440?fm=jpg&q=60&w=1600&auto=format&fit=crop'); background-size: cover; background-position: center 5%; background-attachment: fixed;">
+<body class="bg-navy-900 text-slate-100 min-h-screen" style="background-image: url('https://images.unsplash.com/photo-1551942296-97384c850440?fm=jpg&q=60&w=1600&auto=format&fit=crop'); background-size: cover; background-position: center top; background-attachment: fixed;">
 
   <script src="./firebase-init.js"></script>
   <script>
@@ -288,6 +288,10 @@
     document.addEventListener('alpine:init', () => {
       const db = firebase.firestore();
 
+      function getBigFish(w) {
+        return w.bigFish || w.bigBassWeight || 0;
+      }
+
       function buildSeasonLeaderboard(teams, weighins, tournaments, mode) {
         const byTournament = {};
         weighins.forEach(w => {
@@ -297,40 +301,52 @@
 
         const teamPoints = {};
         teams.forEach(t => {
-          teamPoints[t.id] = { team: t, totalWeight: 0, totalPoints: 0, wins: 0, bigFishWins: 0, tournamentsEntered: 0 };
+          teamPoints[t.id] = { team: t, totalWeight: 0, totalPoints: 0, wins: 0, biggestBass: 0, tournamentsEntered: 0 };
         });
 
         tournaments.forEach(tournament => {
-          const tWeighins = (byTournament[tournament.id] || []).sort((a, b) => b.totalWeight - a.totalWeight);
+          // Sort per-tournament by totalWeight, then bigFish as tiebreaker
+          const tWeighins = (byTournament[tournament.id] || [])
+            .sort((a, b) => b.totalWeight - a.totalWeight || getBigFish(b) - getBigFish(a));
           const n = tWeighins.length;
-          const maxBigFish = tWeighins.reduce((max, w) => Math.max(max, w.bigFish || 0), 0);
 
           tWeighins.forEach((w, idx) => {
             if (!teamPoints[w.teamId]) return;
             teamPoints[w.teamId].totalWeight += w.totalWeight || 0;
             teamPoints[w.teamId].tournamentsEntered += 1;
-            const firstTiedIdx = tWeighins.findIndex(x => x.totalWeight === w.totalWeight);
+
+            // Track biggest bass ever caught by this team
+            const bass = getBigFish(w);
+            if (bass > teamPoints[w.teamId].biggestBass) teamPoints[w.teamId].biggestBass = bass;
+
+            // Points: first non-tied position
+            const firstTiedIdx = tWeighins.findIndex(x =>
+              x.totalWeight === w.totalWeight && getBigFish(x) === getBigFish(w)
+            );
             teamPoints[w.teamId].totalPoints += n - firstTiedIdx;
-            if (firstTiedIdx === 0 || tWeighins[0].totalWeight === w.totalWeight) teamPoints[w.teamId].wins += 1;
-            if (maxBigFish > 0 && w.bigFish === maxBigFish) teamPoints[w.teamId].bigFishWins += 1;
+            if (idx === 0) teamPoints[w.teamId].wins += 1;
           });
         });
 
         const sortKey = mode === 'points' ? 'totalPoints' : 'totalWeight';
         const list = Object.values(teamPoints).sort((a, b) => {
           if (b[sortKey] !== a[sortKey]) return b[sortKey] - a[sortKey];
-          if (b.wins !== a.wins) return b.wins - a.wins;
-          return b.bigFishWins - a.bigFishWins;
+          return b.biggestBass - a.biggestBass;
         });
 
-        let prevVal = null, prevRankLabel = '1';
+        // Assign ranks — true tie only if both sortKey AND biggestBass are equal
+        let prevVal = null, prevBass = null, prevRankLabel = '1';
         return list.map((entry, i) => {
-          const val = entry[sortKey];
           let rankLabel;
           if (i === 0) { rankLabel = '1'; }
-          else if (val === prevVal) { rankLabel = 'T-' + prevRankLabel.replace('T-', ''); }
-          else { rankLabel = String(i + 1); prevRankLabel = rankLabel; }
-          prevVal = val;
+          else if (entry[sortKey] === prevVal && entry.biggestBass === prevBass) {
+            rankLabel = 'T-' + prevRankLabel.replace('T-', '');
+          } else {
+            rankLabel = String(i + 1);
+            prevRankLabel = rankLabel;
+          }
+          prevVal = entry[sortKey];
+          prevBass = entry.biggestBass;
           return { ...entry, rank: rankLabel };
         });
       }
