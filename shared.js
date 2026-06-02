@@ -1,7 +1,7 @@
 export function computeWeighin(fishArray, deadFishCount) {
   const validFish = fishArray.filter(w => w != null && w > 0);
   const total = validFish.reduce((sum, w) => sum + w, 0);
-  const penalty = (deadFishCount || 0) * 0.25;
+  const penalty = (deadFishCount || 0) * 0.5;
   const totalWeight = Math.max(0, Math.round((total - penalty) * 100) / 100);
   const bigFish = validFish.length > 0 ? Math.max(...validFish) : 0;
   return { totalWeight, bigFish };
