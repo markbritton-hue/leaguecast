@@ -132,7 +132,7 @@
         currentPhotoIdx: 0,
         isAdmin: false,
 
-        async init() {
+        init() {
           firebase.auth().onAuthStateChanged(user => {
             this.isAdmin = !!user;
           });
@@ -142,34 +142,24 @@
             window.location.href = 'schedule.html';
             return;
           }
-          await this.loadTournament();
-          await this.loadPhotos();
-        },
 
-        async loadTournament() {
-          try {
-            const doc = await db.collection('tournaments').doc(tournamentId).get();
+          db.collection('tournaments').doc(tournamentId).get().then(doc => {
             if (doc.exists) {
               this.tournamentName = doc.data().name || '';
             }
-          } catch (err) {
-            console.error('Error loading tournament:', err);
-          }
-        },
+          });
 
-        async loadPhotos() {
-          try {
-            const snap = await db.collection('tournaments').doc(tournamentId).collection('photos').get();
+          db.collection('tournaments').doc(tournamentId).collection('photos').onSnapshot(snap => {
             this.photos = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => {
               const aTime = a.timestamp?.toDate?.() || new Date(0);
               const bTime = b.timestamp?.toDate?.() || new Date(0);
               return bTime - aTime;
             });
             this.loading = false;
-          } catch (err) {
+          }, err => {
             console.error('Error loading photos:', err);
             this.loading = false;
-          }
+          });
         },
 
         handleFileSelect(event) {
