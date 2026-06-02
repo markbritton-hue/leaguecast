@@ -115,7 +115,12 @@
       isAdminGlobal = !!user;
     });
 
-    document.addEventListener('alpine:init', () => {
+    function registerGalleryData() {
+      if (typeof Alpine === 'undefined') {
+        setTimeout(registerGalleryData, 50);
+        return;
+      }
+
       const db = firebase.firestore();
       const params = new URLSearchParams(window.location.search);
       const tournamentId = params.get('id');
@@ -158,11 +163,15 @@
 
         async loadPhotos() {
           try {
+            console.log('Loading photos for tournament:', tournamentId);
             const snap = await db.collection('tournaments').doc(tournamentId).collection('photos').orderBy('timestamp', 'desc').get();
+            console.log('Photos loaded:', snap.docs.length);
             this.photos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            console.log('Photos processed:', this.photos);
             this.loading = false;
           } catch (err) {
             console.error('Error loading photos:', err);
+            alert('Error loading photos: ' + err.message);
             this.loading = false;
           }
         },
@@ -240,7 +249,8 @@
           }
         }
       }));
-    });
+    }
+    registerGalleryData();
   </script>
 </body>
 </html>
