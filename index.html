@@ -281,6 +281,20 @@
       <div x-show="hasOpenTournaments" class="mt-3 text-center text-xs text-slate-500">
         ⏳ Standings include results from open tournaments.
       </div>
+
+      <!-- Season totals -->
+      <div x-show="leaderboard.length > 0" class="grid grid-cols-2 gap-3 mt-5">
+        <div class="bg-navy-800/80 border border-navy-700 rounded-xl p-4 text-center backdrop-blur-sm">
+          <div class="text-3xl mb-1">🎣</div>
+          <div class="text-2xl font-black text-amber-400" x-text="totalFishCaught"></div>
+          <div class="text-slate-400 text-sm mt-1">Total Fish Caught</div>
+        </div>
+        <div class="bg-navy-800/80 border border-navy-700 rounded-xl p-4 text-center backdrop-blur-sm">
+          <div class="text-3xl mb-1">⚖️</div>
+          <div class="text-2xl font-black text-amber-400" x-text="totalLbsCaught.toFixed(3) + ' lbs'"></div>
+          <div class="text-slate-400 text-sm mt-1">Total Weight</div>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -444,6 +458,14 @@
 
         get hasOpenTournaments() {
           return this.tournaments.some(t => t.status === 'open');
+        },
+
+        get totalFishCaught() {
+          return this.weighins.reduce((sum, w) => sum + (w.fishCount || 0), 0);
+        },
+
+        get totalLbsCaught() {
+          return this.weighins.reduce((sum, w) => sum + (w.totalWeight || 0), 0);
         }
       }));
     });
