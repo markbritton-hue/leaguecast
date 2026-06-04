@@ -77,8 +77,8 @@
             <div class="min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="font-semibold text-lg" :class="t.status === 'open' ? 'text-white' : 'text-white'" x-text="t.name"></span>
-                <span x-show="isToday(t.date)"
-                  class="flex items-center gap-1 text-xs bg-amber-500/30 text-amber-400 font-bold px-2.5 py-1 rounded-full flex-shrink-0">
+                <span x-show="(t.date?.toDate?.() || new Date(t.date)).toDateString() === new Date().toDateString()"
+                  class="flex items-center gap-1 text-xs bg-amber-500/40 text-amber-400 font-bold px-2.5 py-1 rounded-full flex-shrink-0">
                   📅 Today
                 </span>
                 <span x-show="t.status === 'open'"
