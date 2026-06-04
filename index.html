@@ -24,7 +24,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <link rel="stylesheet" href="./light-mode.css">
   <script src="./theme.js"></script>
 </head>
@@ -45,7 +44,7 @@
   <nav class="relative z-10 bg-navy-800/90 border-b border-forest-700 px-4 sm:px-6 py-3 flex items-center justify-between dark:bg-navy-800 light:bg-slate-100 light:border-slate-300">
     <a href="index.html" class="text-amber-400 font-bold text-xl flex items-center gap-0 p-0"><img src="icons/Leaguecastlogotrans.png" alt="LeagueCast" class="h-12 w-auto object-contain"> LeagueCast</a>
     <div class="flex items-center gap-2">
-      <button onclick="document.getElementById('qrModal').classList.remove('hidden')" class="p-2 rounded-lg hover:bg-navy-700 transition-colors text-xl" title="Share App">📲</button>
+      <button onclick="showQR()" class="p-2 rounded-lg hover:bg-navy-700 transition-colors text-xl" title="Share App">📲</button>
       <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-navy-700 light:hover:bg-slate-200 transition-colors text-xl">☀️</button>
       <a id="btnAdminLogin" href="login.html"
         class="bg-navy-700 hover:bg-navy-600 text-slate-400 hover:text-amber-400 px-4 py-2 rounded-lg text-sm font-semibold border border-navy-600 hover:border-amber-400 transition-colors light:bg-slate-200 light:hover:bg-slate-300 light:text-slate-700 light:border-slate-300">
@@ -496,12 +495,12 @@
   </script>
 
   <!-- QR Code Modal -->
-  <div id="qrModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+  <div id="qrModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onclick="if(event.target===this)this.classList.add('hidden')">
     <div class="bg-navy-800 border border-navy-600 rounded-2xl p-6 w-full max-w-sm text-center shadow-2xl">
       <h2 class="text-xl font-bold text-amber-400 mb-1">Share LeagueCast</h2>
       <p class="text-slate-400 text-sm mb-4">Scan to open the app</p>
       <div class="bg-white rounded-xl p-4 inline-block mb-4">
-        <canvas id="qrCanvas"></canvas>
+        <img id="qrImage" src="" alt="QR Code" class="w-52 h-52">
       </div>
       <p class="text-slate-500 text-xs mb-4 break-all" id="qrUrl"></p>
       <button onclick="document.getElementById('qrModal').classList.add('hidden')"
@@ -512,14 +511,12 @@
   </div>
 
   <script>
-    document.getElementById('qrModal').addEventListener('click', function(e) {
-      if (e.target === this) this.classList.add('hidden');
-    });
-    document.querySelector('[onclick*="qrModal"]').addEventListener('click', function() {
-      const url = window.location.href.split('?')[0];
+    function showQR() {
+      const url = window.location.origin + window.location.pathname;
       document.getElementById('qrUrl').textContent = url;
-      QRCode.toCanvas(document.getElementById('qrCanvas'), url, { width: 220, margin: 1 });
-    });
+      document.getElementById('qrImage').src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(url);
+      document.getElementById('qrModal').classList.remove('hidden');
+    }
   </script>
 </body>
 </html>
