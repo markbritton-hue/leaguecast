@@ -72,12 +72,12 @@
     <div x-show="!loading" class="space-y-3">
       <template x-for="t in tournaments" :key="t.id">
         <div class="border rounded-xl p-4 transition-colors"
-          :class="{ 'bg-amber-500/40 border-amber-500/80': (t.date?.toDate?.() || new Date(t.date)).toDateString() === new Date().toDateString(), 'bg-forest-700/20 border-forest-500/50': t.status === 'open' && (t.date?.toDate?.() || new Date(t.date)).toDateString() !== new Date().toDateString(), 'bg-navy-800 border-navy-700': t.status !== 'open' && (t.date?.toDate?.() || new Date(t.date)).toDateString() !== new Date().toDateString() }">
+          :class="{ 'bg-amber-500/40 border-amber-500/80': t.isTodayFlag, 'bg-forest-700/20 border-forest-500/50': !t.isTodayFlag && t.status === 'open', 'bg-navy-800 border-navy-700': !t.isTodayFlag && t.status !== 'open' }">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="font-semibold text-lg" :class="t.status === 'open' ? 'text-white' : 'text-white'" x-text="t.name"></span>
-                <span x-show="(t.date?.toDate?.() || new Date(t.date)).toDateString() === new Date().toDateString()"
+                <span x-show="t.isTodayFlag"
                   class="flex items-center gap-1 text-xs bg-amber-500/40 text-amber-400 font-bold px-2.5 py-1 rounded-full flex-shrink-0">
                   📅 Today
                 </span>
@@ -248,7 +248,15 @@
 
         init() {
           db.collection('tournaments').orderBy('date', 'asc').onSnapshot(snap => {
-            const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            const today = new Date().toDateString();
+            const all = snap.docs.map(d => {
+              const tDate = d.data().date?.toDate?.() || new Date(d.data().date);
+              return {
+                id: d.id,
+                ...d.data(),
+                isTodayFlag: tDate.toDateString() === today
+              };
+            });
             this.tournaments = all.sort((a, b) => {
               const aDate = a.date?.toDate?.() || new Date(a.date);
               const bDate = b.date?.toDate?.() || new Date(b.date);
