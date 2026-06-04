@@ -248,14 +248,20 @@
 
         init() {
           db.collection('tournaments').orderBy('date', 'asc').onSnapshot(snap => {
-            const today = new Date().toDateString();
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
             const all = snap.docs.map(d => {
-              const tDate = d.data().date?.toDate?.() || new Date(d.data().date);
-              return {
-                id: d.id,
-                ...d.data(),
-                isTodayFlag: tDate.toDateString() === today
-              };
+              const data = d.data();
+              let isTodayFlag = false;
+              try {
+                const tDate = data.date?.toDate ? data.date.toDate() : new Date(data.date);
+                const tStr = `${tDate.getFullYear()}-${tDate.getMonth()}-${tDate.getDate()}`;
+                isTodayFlag = tStr === todayStr;
+                console.log('Tournament:', data.name, '| Date:', tDate.toDateString(), '| Today:', today.toDateString(), '| Match:', isTodayFlag);
+              } catch(e) {
+                console.log('Date error for', data.name, e);
+              }
+              return { id: d.id, ...data, isTodayFlag };
             });
             this.tournaments = all.sort((a, b) => {
               const aDate = a.date?.toDate?.() || new Date(a.date);
