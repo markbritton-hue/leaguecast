@@ -93,7 +93,7 @@
       <!-- Tournaments — always visible (read-only) -->
       <a href="schedule.html"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg px-4 py-4 flex items-center gap-4 transition-all group backdrop-blur-sm">
-        <img src="tournamnettransicon.png" alt="Tournaments" class="w-14 h-14 flex-shrink-0 object-contain">
+        <img src="tournament.png" alt="Tournaments" class="w-14 h-14 flex-shrink-0 object-contain">
         <div class="flex-1 min-w-0">
           <div class="text-white font-bold text-base group-hover:text-amber-400 transition-colors">TOURNAMENTS</div>
         </div>
@@ -103,7 +103,7 @@
       <!-- Results — always visible -->
       <a :href="activeTournamentId ? `results.html?id=${activeTournamentId}` : 'results.html'"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-3 flex items-center gap-3 transition-all group backdrop-blur-sm">
-        <span class="text-3xl flex-shrink-0">📊</span>
+        <img src="results.png" alt="Results" class="w-14 h-14 flex-shrink-0 object-contain">
         <div class="flex-1 min-w-0">
           <div class="text-white font-bold text-base group-hover:text-forest-400 transition-colors">RESULTS</div>
         </div>
@@ -113,7 +113,7 @@
       <!-- Rules — always visible -->
       <a href="rules.html"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-3 flex items-center gap-3 transition-all group backdrop-blur-sm">
-        <span class="text-3xl flex-shrink-0">📋</span>
+        <img src="rules.png" alt="Rules" class="w-14 h-14 flex-shrink-0 object-contain">
         <div class="flex-1 min-w-0">
           <div class="text-white font-bold text-base group-hover:text-amber-400 transition-colors">RULES</div>
         </div>
@@ -135,7 +135,7 @@
       <!-- Standings — always visible -->
       <a href="#standings"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-3 flex items-center gap-3 transition-all group backdrop-blur-sm">
-        <span class="text-3xl flex-shrink-0">🏆</span>
+        <img src="Standings.png" alt="Standings" class="w-14 h-14 flex-shrink-0 object-contain">
         <div class="flex-1 min-w-0">
           <div class="text-white font-bold text-base group-hover:text-amber-400 transition-colors">STANDINGS</div>
         </div>
@@ -146,7 +146,7 @@
       <a x-show="authReady && isAdmin"
         :href="activeTournamentId ? `weigh-in.html?tournament=${activeTournamentId}` : 'tournaments.html'"
         class="bg-forest-700/60 border border-forest-600/50 hover:border-forest-500 hover:bg-forest-700/80 rounded-lg p-3 flex items-center gap-3 transition-all group backdrop-blur-sm">
-        <img src="bassweighicon.png" alt="Weigh-In" class="w-14 h-14 flex-shrink-0 object-contain">
+        <img src="weigh-in.png" alt="Weigh-In" class="w-14 h-14 flex-shrink-0 object-contain">
         <div class="flex-1 min-w-0">
           <div class="text-white font-bold text-base group-hover:text-forest-200 transition-colors">WEIGH-IN</div>
         </div>
