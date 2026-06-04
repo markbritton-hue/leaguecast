@@ -210,10 +210,11 @@
               class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-navy-700/50 transition-colors">
 
               <!-- Rank -->
-              <div class="w-10 flex-shrink-0 text-center">
-                <span class="font-black text-lg"
-                  :class="entry.rank === '1' ? 'text-amber-400' : 'text-slate-400'"
-                  x-text="entry.rank"></span>
+              <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+                <img x-show="entry.rank === '1'" src="goldfish-trophy1.png" alt="1st Place" class="w-12 h-12 object-contain">
+                <img x-show="entry.rank === '2'" src="trophy-fish-award2.png" alt="2nd Place" class="w-12 h-12 object-contain">
+                <img x-show="entry.rank === '3'" src="fish-trophy3.png" alt="3rd Place" class="w-12 h-12 object-contain">
+                <span x-show="entry.rank !== '1' && entry.rank !== '2' && entry.rank !== '3'" class="font-black text-lg text-slate-400" x-text="entry.rank"></span>
               </div>
 
               <!-- Team name -->
