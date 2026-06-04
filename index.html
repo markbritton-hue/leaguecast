@@ -69,7 +69,7 @@
         class="block bg-amber-500/15 border border-amber-500/50 rounded-2xl p-6 hover:bg-amber-500/20 transition-colors">
         <div class="flex items-start gap-4">
           <img src="icons/tournament.png" alt="Active" class="w-16 h-16 flex-shrink-0 object-contain">
-          <div class="flex-1 min-w-0">
+          <div class="flex-1 min-w-0 overflow-hidden">
             <div class="text-sm text-amber-400 font-bold uppercase tracking-wider mb-1">Tournament Today</div>
             <div class="text-white font-black text-3xl leading-tight mb-1" x-text="todayTournament ? todayTournament.name : ''"></div>
             <div class="text-slate-300 text-lg mb-2" x-text="todayTournament ? (todayTournament.locationName || '') : ''"></div>
@@ -94,8 +94,8 @@
       <a href="schedule.html"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-2 flex items-center gap-2 transition-all group backdrop-blur-sm">
         <img src="icons/tournament.png" alt="Tournaments" class="w-16 h-16 flex-shrink-0 object-contain">
-        <div class="flex-1 min-w-0">
-          <div class="text-white font-bold text-base group-hover:text-amber-400 transition-colors">TOURNAMENTS</div>
+        <div class="flex-1 min-w-0 overflow-hidden">
+          <div class="text-white font-bold text-sm sm:text-base truncate group-hover:text-amber-400 transition-colors">TOURNAMENTS</div>
         </div>
         <span class="text-slate-400 text-lg flex-shrink-0">›</span>
       </a>
@@ -104,7 +104,7 @@
       <a :href="activeTournamentId ? `results.html?id=${activeTournamentId}` : 'results.html'"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-2 flex items-center gap-2 transition-all group backdrop-blur-sm">
         <img src="icons/results.png" alt="Results" class="w-16 h-16 flex-shrink-0 object-contain">
-        <div class="flex-1 min-w-0">
+        <div class="flex-1 min-w-0 overflow-hidden">
           <div class="text-white font-bold text-base group-hover:text-forest-400 transition-colors">RESULTS</div>
         </div>
         <span class="text-slate-400 text-lg flex-shrink-0">›</span>
@@ -114,8 +114,8 @@
       <a href="rules.html"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-2 flex items-center gap-2 transition-all group backdrop-blur-sm">
         <img src="icons/rules.png" alt="Rules" class="w-16 h-16 flex-shrink-0 object-contain">
-        <div class="flex-1 min-w-0">
-          <div class="text-white font-bold text-base group-hover:text-amber-400 transition-colors">RULES</div>
+        <div class="flex-1 min-w-0 overflow-hidden">
+          <div class="text-white font-bold text-sm sm:text-base truncate group-hover:text-amber-400 transition-colors">RULES</div>
         </div>
         <span class="text-slate-400 text-lg flex-shrink-0">›</span>
       </a>
@@ -124,7 +124,7 @@
       <a href="https://www.youtube.com/@BJonesfishing" target="_blank" rel="noopener noreferrer"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-2 flex items-center gap-2 transition-all group backdrop-blur-sm">
         <img src="icons/youtube.png" alt="BJones Channel" class="w-16 h-16 flex-shrink-0 object-contain">
-        <div class="flex-1 min-w-0">
+        <div class="flex-1 min-w-0 overflow-hidden">
           <div class="text-white font-bold text-base group-hover:text-red-400 transition-colors">BJONES CHANNEL</div>
         </div>
         <span class="text-slate-400 text-lg flex-shrink-0">›</span>
@@ -134,8 +134,8 @@
       <a href="#standings"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-2 flex items-center gap-2 transition-all group backdrop-blur-sm">
         <img src="icons/standings.png" alt="Standings" class="w-16 h-16 flex-shrink-0 object-contain">
-        <div class="flex-1 min-w-0">
-          <div class="text-white font-bold text-base group-hover:text-amber-400 transition-colors">STANDINGS</div>
+        <div class="flex-1 min-w-0 overflow-hidden">
+          <div class="text-white font-bold text-sm sm:text-base truncate group-hover:text-amber-400 transition-colors">STANDINGS</div>
         </div>
         <span class="text-slate-400 text-lg flex-shrink-0">›</span>
       </a>
@@ -145,8 +145,8 @@
         :href="activeTournamentId ? `weigh-in.html?tournament=${activeTournamentId}` : 'tournaments.html'"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-2 flex items-center gap-2 transition-all group backdrop-blur-sm">
         <img src="icons/weightin.png" alt="Weigh-In" class="w-16 h-16 flex-shrink-0 object-contain">
-        <div class="flex-1 min-w-0">
-          <div class="text-white font-bold text-base group-hover:text-amber-400 transition-colors">WEIGH-IN</div>
+        <div class="flex-1 min-w-0 overflow-hidden">
+          <div class="text-white font-bold text-sm sm:text-base truncate group-hover:text-amber-400 transition-colors">WEIGH-IN</div>
         </div>
         <span class="text-slate-300 text-lg flex-shrink-0">›</span>
       </a>
@@ -155,8 +155,8 @@
       <a x-show="authReady && isAdmin" href="manage.html"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-2 flex items-center gap-2 transition-all group backdrop-blur-sm">
         <img src="icons/manage.png" alt="Manage" class="w-16 h-16 flex-shrink-0 object-contain">
-        <div class="flex-1 min-w-0">
-          <div class="text-white font-bold text-base group-hover:text-amber-400 transition-colors">MANAGE</div>
+        <div class="flex-1 min-w-0 overflow-hidden">
+          <div class="text-white font-bold text-sm sm:text-base truncate group-hover:text-amber-400 transition-colors">MANAGE</div>
         </div>
         <span class="text-slate-400 text-lg flex-shrink-0">›</span>
       </a>
@@ -188,7 +188,7 @@
         <template x-if="leaderboard.length > 0">
           <div class="bg-amber-500/20 border border-amber-500/40 rounded-xl p-4 flex items-center gap-4">
             <img src="goldfish-trophy1.png" alt="1st Place" class="w-20 h-20 sm:w-28 sm:h-28 flex-shrink-0 object-contain">
-            <div class="flex-1 min-w-0">
+            <div class="flex-1 min-w-0 overflow-hidden">
               <div class="text-xs text-amber-400 font-bold uppercase tracking-wider">1st Place</div>
               <div class="text-white font-bold text-sm sm:text-lg leading-tight mt-1" x-text="leaderboard[0]?.team?.angler1?.name + ' & ' + leaderboard[0]?.team?.angler2?.name"></div>
               <div class="text-amber-400 font-black text-2xl sm:text-3xl mt-2"
@@ -199,7 +199,7 @@
         <template x-if="leaderboard.length > 1">
           <div class="bg-slate-600/30 border border-slate-600/50 rounded-xl p-4 flex items-center gap-4">
             <img src="trophy-fish-award2.png" alt="2nd Place" class="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 object-contain">
-            <div class="flex-1 min-w-0">
+            <div class="flex-1 min-w-0 overflow-hidden">
               <div class="text-xs text-slate-400 font-bold uppercase tracking-wider">2nd Place</div>
               <div class="text-slate-100 font-bold text-sm sm:text-lg leading-tight mt-1" x-text="leaderboard[1]?.team?.angler1?.name + ' & ' + leaderboard[1]?.team?.angler2?.name"></div>
               <div class="text-slate-300 font-black text-xl sm:text-2xl mt-2"
@@ -210,7 +210,7 @@
         <template x-if="leaderboard.length > 2">
           <div class="bg-orange-700/20 border border-orange-700/30 rounded-xl p-4 flex items-center gap-4">
             <img src="fish-trophy3.png" alt="3rd Place" class="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 object-contain">
-            <div class="flex-1 min-w-0">
+            <div class="flex-1 min-w-0 overflow-hidden">
               <div class="text-xs text-orange-400 font-bold uppercase tracking-wider">3rd Place</div>
               <div class="text-slate-100 font-bold text-sm sm:text-lg leading-tight mt-1" x-text="leaderboard[2]?.team?.angler1?.name + ' & ' + leaderboard[2]?.team?.angler2?.name"></div>
               <div class="text-orange-300 font-black text-xl sm:text-2xl mt-2"
@@ -237,7 +237,7 @@
               </div>
 
               <!-- Team name -->
-              <div class="flex-1 min-w-0">
+              <div class="flex-1 min-w-0 overflow-hidden">
                 <div class="font-bold text-white text-base leading-tight" x-text="entry.team.teamName"></div>
                 <div class="text-slate-500 text-xs mt-0.5"
                   x-text="entry.team.angler1.name + ' & ' + entry.team.angler2.name"></div>
