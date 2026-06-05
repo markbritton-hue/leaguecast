@@ -74,7 +74,7 @@
 
       <!-- Team list -->
       <div class="space-y-2">
-        <template x-for="team in sortedTeams" :key="team.id">
+        <template x-for="(team, index) in sortedTeams" :key="team.id">
           <div class="border rounded-xl px-4 py-3 flex items-center justify-between gap-3"
             :class="checkinMap[team.id] && checkinMap[team.id].startBoat
               ? 'bg-red-950 border-red-700'
@@ -90,10 +90,10 @@
                   class="text-4xl font-black"
                   x-text="checkinMap[team.id] ? checkinMap[team.id].boatNumber : ''"></span>
                 <span x-show="!checkinMap[team.id]" class="text-2xl">—</span>
-                <!-- Boat number badge overlay -->
+                <!-- List position badge overlay -->
                 <span x-show="checkinMap[team.id] && !checkinMap[team.id].startBoat"
                   class="absolute -bottom-2 -right-2 bg-navy-900 text-amber-400 font-black text-xs px-1.5 py-0.5 rounded-full border border-amber-500 leading-tight"
-                  x-text="'#' + checkinMap[team.id]?.boatNumber"></span>
+                  x-text="'#' + (index + 1)"></span>
               </div>
               <div>
                 <div class="font-bold text-base"
