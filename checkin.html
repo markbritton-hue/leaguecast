@@ -231,9 +231,15 @@
 
         get sortedTeams() {
           return [...this.teams].sort((a, b) => {
-            const aStart = this.checkinMap[a.id]?.startBoat ? -1 : 0;
-            const bStart = this.checkinMap[b.id]?.startBoat ? -1 : 0;
-            return aStart - bStart;
+            const aStart = this.checkinMap[a.id]?.startBoat || false;
+            const bStart = this.checkinMap[b.id]?.startBoat || false;
+            // Start boat always goes to bottom
+            if (aStart && !bStart) return 1;
+            if (!aStart && bStart) return -1;
+            // Otherwise sort by boat number (unchecked teams go to bottom)
+            const aBoat = this.checkinMap[a.id]?.boatNumber ?? 9999;
+            const bBoat = this.checkinMap[b.id]?.boatNumber ?? 9999;
+            return aBoat - bBoat;
           });
         },
 
