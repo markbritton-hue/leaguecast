@@ -81,14 +81,19 @@
               : checkinMap[team.id] ? 'bg-navy-800 border-amber-600/50' : 'bg-navy-800 border-navy-700'">
             <div class="min-w-0 flex items-center gap-3">
               <!-- Badge -->
-              <div class="w-16 h-16 rounded-xl flex items-center justify-center font-black text-3xl flex-shrink-0 transition-colors"
+              <div class="relative w-16 h-16 rounded-xl flex items-center justify-center font-black text-3xl flex-shrink-0 transition-colors"
                 :class="checkinMap[team.id] && checkinMap[team.id].startBoat
                   ? 'bg-red-600 text-white'
                   : checkinMap[team.id] ? 'bg-amber-500 text-navy-900' : 'bg-navy-700 text-slate-500'">
                 <span x-show="checkinMap[team.id] && checkinMap[team.id].startBoat">🚤</span>
                 <span x-show="checkinMap[team.id] && !checkinMap[team.id].startBoat"
+                  class="text-4xl font-black"
                   x-text="checkinMap[team.id] ? checkinMap[team.id].boatNumber : ''"></span>
                 <span x-show="!checkinMap[team.id]" class="text-2xl">—</span>
+                <!-- Boat number badge overlay -->
+                <span x-show="checkinMap[team.id] && !checkinMap[team.id].startBoat"
+                  class="absolute -bottom-2 -right-2 bg-navy-900 text-amber-400 font-black text-xs px-1.5 py-0.5 rounded-full border border-amber-500 leading-tight"
+                  x-text="'#' + checkinMap[team.id]?.boatNumber"></span>
               </div>
               <div>
                 <div class="font-bold text-base"
