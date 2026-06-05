@@ -257,10 +257,7 @@
                 const tDate = data.date?.toDate ? data.date.toDate() : new Date(data.date);
                 const tStr = `${tDate.getFullYear()}-${tDate.getMonth()}-${tDate.getDate()}`;
                 isTodayFlag = tStr === todayStr;
-                console.log('Tournament:', data.name, '| Date:', tDate.toDateString(), '| Today:', today.toDateString(), '| Match:', isTodayFlag);
-              } catch(e) {
-                console.log('Date error for', data.name, e);
-              }
+              } catch(e) {}
               return { id: d.id, ...data, isTodayFlag };
             });
             this.tournaments = all.sort((a, b) => {
