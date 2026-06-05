@@ -71,7 +71,8 @@
     <!-- Tournament list -->
     <div x-show="!loading" class="space-y-3">
       <template x-for="t in tournaments" :key="t.id">
-        <div class="border rounded-xl p-4 transition-colors bg-amber-500/40 border-amber-500/80">
+        <div class="border rounded-xl p-4 transition-colors"
+          :class="{ 'bg-amber-500/40 border-amber-500/80': t.isTodayFlag, 'bg-forest-700/20 border-forest-500/50': !t.isTodayFlag && t.status === 'open', 'bg-navy-800 border-navy-700': !t.isTodayFlag && t.status !== 'open' }">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
