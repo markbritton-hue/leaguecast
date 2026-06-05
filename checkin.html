@@ -236,12 +236,17 @@
 
         get sortedTeams() {
           return [...this.teams].sort((a, b) => {
+            const aChecked = !!this.checkinMap[a.id];
+            const bChecked = !!this.checkinMap[b.id];
             const aStart = this.checkinMap[a.id]?.startBoat || false;
             const bStart = this.checkinMap[b.id]?.startBoat || false;
-            // Start boat always goes to bottom
-            if (aStart && !bStart) return 1;
-            if (!aStart && bStart) return -1;
-            // Otherwise sort by boat number (unchecked teams go to bottom)
+
+            // Group order: 1) checked-in (by boat number), 2) start boat, 3) not checked in
+            const aOrder = !aChecked ? 3 : aStart ? 2 : 1;
+            const bOrder = !bChecked ? 3 : bStart ? 2 : 1;
+            if (aOrder !== bOrder) return aOrder - bOrder;
+
+            // Within checked-in group, sort by boat number
             const aBoat = this.checkinMap[a.id]?.boatNumber ?? 9999;
             const bBoat = this.checkinMap[b.id]?.boatNumber ?? 9999;
             return aBoat - bBoat;
