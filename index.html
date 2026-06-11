@@ -66,9 +66,9 @@
 
     <!-- Today's Tournament banner -->
     <div x-show="todayTournament" class="mb-5">
-      <a :href="todayTournament ? `results.html?id=${todayTournament.id}` : '#'"
-        class="block bg-amber-500/15 border border-amber-500/50 rounded-2xl p-6 hover:bg-amber-500/20 transition-colors">
-        <div class="flex items-start gap-4">
+      <div class="bg-amber-500/15 border border-amber-500/50 rounded-2xl p-6">
+        <a :href="todayTournament ? `results.html?id=${todayTournament.id}` : '#'"
+          class="flex items-start gap-4 hover:opacity-90 transition-opacity">
           <img src="icons/tournament.webp" alt="Active" class="w-16 h-16 flex-shrink-0 object-contain">
           <div class="flex-1 min-w-0 overflow-hidden">
             <div class="text-sm text-amber-400 font-bold uppercase tracking-wider mb-1">Tournament Today</div>
@@ -84,8 +84,14 @@
             </div>
           </div>
           <span class="text-amber-400 text-2xl flex-shrink-0 mt-1">→</span>
+        </a>
+        <div x-show="todayTournament && todayTournament.mapsLink" class="mt-4">
+          <a :href="todayTournament ? todayTournament.mapsLink : '#'" target="_blank" rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 bg-amber-500/20 hover:bg-amber-500/35 text-amber-300 font-semibold px-4 py-2 rounded-xl border border-amber-500/50 hover:border-amber-400 transition-colors text-sm">
+            📍 Open in Maps
+          </a>
         </div>
-      </a>
+      </div>
     </div>
 
     <!-- Quick Nav Cards -->
