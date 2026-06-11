@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -27,7 +27,7 @@
   <link rel="stylesheet" href="./light-mode.css">
   <script src="./theme.js"></script>
 </head>
-<body class="bg-navy-900 text-slate-100 min-h-screen" style="background-image: url('https://images.unsplash.com/photo-1551942296-97384c850440?fm=jpg&q=60&w=1600&auto=format&fit=crop'); background-size: cover; background-position: center -100px; background-attachment: fixed;">
+<body class="bg-navy-900 text-slate-100 min-h-screen" style="background-image: url('https://images.unsplash.com/photo-1551942296-97384c850440?fm=jpg&q=60&w=1600&auto=format&fit=crop'); background-size: cover; background-position: center -100px;">
 
   <script src="./firebase-init.js"></script>
   <script>
@@ -42,7 +42,7 @@
 
   <!-- Nav -->
   <nav class="relative z-10 bg-navy-800/90 border-b border-forest-700 px-4 sm:px-6 py-3 flex items-center justify-between dark:bg-navy-800 light:bg-slate-100 light:border-slate-300">
-    <a href="index.html" class="text-amber-400 font-bold text-xl flex items-center gap-0 p-0"><img src="icons/Leaguecastlogotrans.png" alt="LeagueCast" class="h-12 w-auto object-contain"> LeagueCast</a>
+    <a href="index.html" class="text-amber-400 font-bold text-xl flex items-center gap-0 p-0"><img src="icons/Leaguecastlogotrans.webp" alt="LeagueCast" class="h-12 w-auto object-contain"> LeagueCast</a>
     <div class="flex items-center gap-2">
       <button onclick="showQR()" class="p-2 rounded-lg hover:bg-navy-700 transition-colors text-xl" title="Share App">📲</button>
       <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-navy-700 light:hover:bg-slate-200 transition-colors text-xl">☀️</button>
@@ -69,7 +69,7 @@
       <a :href="todayTournament ? `results.html?id=${todayTournament.id}` : '#'"
         class="block bg-amber-500/15 border border-amber-500/50 rounded-2xl p-6 hover:bg-amber-500/20 transition-colors">
         <div class="flex items-start gap-4">
-          <img src="icons/tournament.png" alt="Active" class="w-16 h-16 flex-shrink-0 object-contain">
+          <img src="icons/tournament.webp" alt="Active" class="w-16 h-16 flex-shrink-0 object-contain">
           <div class="flex-1 min-w-0 overflow-hidden">
             <div class="text-sm text-amber-400 font-bold uppercase tracking-wider mb-1">Tournament Today</div>
             <div class="text-white font-black text-3xl leading-tight mb-1" x-text="todayTournament ? todayTournament.name : ''"></div>
@@ -94,7 +94,7 @@
       <!-- Tournaments — always visible (read-only) -->
       <a href="schedule.html"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-2 flex items-center gap-2 transition-all group backdrop-blur-sm">
-        <img src="icons/tournament.png" alt="Tournaments" class="w-16 h-16 flex-shrink-0 object-contain">
+        <img src="icons/tournament.webp" alt="Tournaments" class="w-16 h-16 flex-shrink-0 object-contain">
         <div class="flex-1 min-w-0 overflow-hidden">
           <div class="text-white font-bold text-sm sm:text-base truncate group-hover:text-amber-400 transition-colors">TOURNAMENTS</div>
         </div>
@@ -104,7 +104,7 @@
       <!-- Results — always visible -->
       <a :href="activeTournamentId ? `results.html?id=${activeTournamentId}` : 'results.html'"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-2 flex items-center gap-2 transition-all group backdrop-blur-sm">
-        <img src="icons/results.png" alt="Results" class="w-16 h-16 flex-shrink-0 object-contain">
+        <img src="icons/results.webp" alt="Results" class="w-16 h-16 flex-shrink-0 object-contain">
         <div class="flex-1 min-w-0 overflow-hidden">
           <div class="text-white font-bold text-base group-hover:text-forest-400 transition-colors">RESULTS</div>
         </div>
@@ -114,7 +114,7 @@
       <!-- Rules — always visible -->
       <a href="rules.html"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-2 flex items-center gap-2 transition-all group backdrop-blur-sm">
-        <img src="icons/rules.png" alt="Rules" class="w-16 h-16 flex-shrink-0 object-contain">
+        <img src="icons/rules.webp" alt="Rules" class="w-16 h-16 flex-shrink-0 object-contain">
         <div class="flex-1 min-w-0 overflow-hidden">
           <div class="text-white font-bold text-sm sm:text-base truncate group-hover:text-amber-400 transition-colors">RULES</div>
         </div>
@@ -124,7 +124,7 @@
       <!-- BJones Channel — always visible -->
       <a href="https://www.youtube.com/@BJonesfishing" target="_blank" rel="noopener noreferrer"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-2 flex items-center gap-2 transition-all group backdrop-blur-sm">
-        <img src="icons/youtube.png" alt="BJones Channel" class="w-16 h-16 flex-shrink-0 object-contain">
+        <img src="icons/youtube.webp" alt="BJones Channel" class="w-16 h-16 flex-shrink-0 object-contain">
         <div class="flex-1 min-w-0 overflow-hidden">
           <div class="text-white font-bold text-base group-hover:text-red-400 transition-colors">BJONES CHANNEL</div>
         </div>
@@ -134,7 +134,7 @@
       <!-- Standings — always visible -->
       <a href="#standings"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-2 flex items-center gap-2 transition-all group backdrop-blur-sm">
-        <img src="icons/standings.png" alt="Standings" class="w-16 h-16 flex-shrink-0 object-contain">
+        <img src="icons/standings.webp" alt="Standings" class="w-16 h-16 flex-shrink-0 object-contain">
         <div class="flex-1 min-w-0 overflow-hidden">
           <div class="text-white font-bold text-sm sm:text-base truncate group-hover:text-amber-400 transition-colors">STANDINGS</div>
         </div>
@@ -145,7 +145,7 @@
       <a x-show="authReady && isAdmin"
         :href="activeTournamentId ? `weigh-in.html?tournament=${activeTournamentId}` : 'tournaments.html'"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-2 flex items-center gap-2 transition-all group backdrop-blur-sm">
-        <img src="icons/weightin.png" alt="Weigh-In" class="w-16 h-16 flex-shrink-0 object-contain">
+        <img src="icons/weightin.webp" alt="Weigh-In" class="w-16 h-16 flex-shrink-0 object-contain">
         <div class="flex-1 min-w-0 overflow-hidden">
           <div class="text-white font-bold text-sm sm:text-base truncate group-hover:text-amber-400 transition-colors">WEIGH-IN</div>
         </div>
@@ -155,7 +155,7 @@
       <!-- Admin only: Manage -->
       <a x-show="authReady && isAdmin" href="manage.html"
         class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-2 flex items-center gap-2 transition-all group backdrop-blur-sm">
-        <img src="icons/manage.png" alt="Manage" class="w-16 h-16 flex-shrink-0 object-contain">
+        <img src="icons/manage.webp" alt="Manage" class="w-16 h-16 flex-shrink-0 object-contain">
         <div class="flex-1 min-w-0 overflow-hidden">
           <div class="text-white font-bold text-sm sm:text-base truncate group-hover:text-amber-400 transition-colors">MANAGE</div>
         </div>
@@ -176,7 +176,7 @@
     <div x-show="!loading">
 
       <div x-show="leaderboard.length === 0" class="text-center py-16 text-slate-400">
-        <img src="icons/tournament.png" alt="No data" class="w-16 h-16 mx-auto mb-4 object-contain">
+        <img src="icons/tournament.webp" alt="No data" class="w-16 h-16 mx-auto mb-4 object-contain">
         <p class="text-lg">No data yet.</p>
         <div class="flex gap-4 justify-center mt-4">
           <a href="teams.html" class="text-amber-400 hover:underline text-sm">Add teams →</a>
@@ -283,7 +283,7 @@
                             x-show="getTournamentWeighin(entry.team.id, t.id) && getTournamentWeighin(entry.team.id, t.id).bigFish > 0"
                             x-text="getTournamentWeighinBigBass(entry.team.id, t.id)"></div>
                           <div class="text-xs text-slate-500 flex items-center gap-1">
-                            <img src="icons/tournament.png" alt="Fish" class="w-3 h-3 object-contain">
+                            <img src="icons/tournament.webp" alt="Fish" class="w-3 h-3 object-contain">
                             <span x-text="(getTournamentWeighin(entry.team.id, t.id).fishCount || 0) + ' fish'"></span>
                           </div>
                         </div>
@@ -308,7 +308,7 @@
       <!-- Season totals -->
       <div x-show="leaderboard.length > 0" class="grid grid-cols-2 gap-3 mt-5">
         <div class="bg-navy-800/80 border border-navy-700 rounded-xl p-4 text-center backdrop-blur-sm">
-          <img src="icons/tournament.png" alt="Events" class="w-8 h-8 mx-auto mb-1 object-contain">
+          <img src="icons/tournament.webp" alt="Events" class="w-8 h-8 mx-auto mb-1 object-contain">
           <div class="text-2xl font-black text-amber-400" x-text="totalFishCaught"></div>
           <div class="text-slate-400 text-sm mt-1">Total Fish Caught</div>
         </div>

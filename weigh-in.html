@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -34,7 +34,7 @@
 
   <nav class="bg-navy-800 border-b border-forest-700 px-4 py-3 flex items-center justify-between">
     <a href="tournaments.html" class="bg-navy-700 hover:bg-navy-600 text-slate-200 hover:text-amber-400 px-4 py-2 rounded-lg font-semibold text-sm border border-navy-600 hover:border-amber-400 transition-colors">← Back</a>
-    <a href="index.html" class="text-amber-400 font-bold text-xl flex items-center gap-0 p-0"><img src="icons/Leaguecastlogotrans.png" alt="LeagueCast" class="h-12 w-auto object-contain"> LeagueCast</a>
+    <a href="index.html" class="text-amber-400 font-bold text-xl flex items-center gap-0 p-0"><img src="icons/Leaguecastlogotrans.webp" alt="LeagueCast" class="h-12 w-auto object-contain"> LeagueCast</a>
     <button onclick="firebase.auth().signOut().then(() => window.location.href='login.html')"
       class="bg-navy-700 hover:bg-red-900 text-slate-400 hover:text-red-400 px-4 py-2 rounded-lg text-sm font-semibold border border-navy-600 hover:border-red-800 transition-colors">
       Sign Out
@@ -110,7 +110,7 @@
             <!-- Fish count badge -->
             <div x-show="weighinMap[team.id]"
               class="text-xs font-bold text-slate-400 flex-shrink-0"
-              x-text="weighinMap[team.id] ? '<img src="icons/tournament.png" alt="Icon" class="w-4 h-4 object-contain" style="display:inline;"> ' + (weighinMap[team.id].fishCount || 0) : ''"></div>
+              x-text="weighinMap[team.id] ? '<img src="icons/tournament.webp" alt="Icon" class="w-4 h-4 object-contain" style="display:inline;"> ' + (weighinMap[team.id].fishCount || 0) : ''"></div>
 
             <!-- Action button -->
             <button
@@ -150,7 +150,7 @@
 
           <!-- # Fish -->
           <div class="bg-navy-900 border border-navy-700 rounded-xl p-4">
-            <label class="block text-sm font-semibold text-slate-300 mb-3"><img src="icons/tournament.png" alt="Icon" class="w-4 h-4 object-contain" style="display:inline;"> Number of Fish</label>
+            <label class="block text-sm font-semibold text-slate-300 mb-3"><img src="icons/tournament.webp" alt="Icon" class="w-4 h-4 object-contain" style="display:inline;"> Number of Fish</label>
             <div class="flex items-center justify-center gap-4">
               <button type="button" @click="form.fishCount = Math.max(0, (form.fishCount || 0) - 1)"
                 class="w-12 h-12 rounded-full bg-navy-700 hover:bg-navy-600 text-white font-bold text-2xl transition-colors flex items-center justify-center">−</button>
