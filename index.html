@@ -66,14 +66,14 @@
 
     <!-- Today's Tournament banner -->
     <div x-show="todayTournament" class="mb-5">
-      <div class="bg-amber-500/15 border border-amber-500/50 rounded-2xl p-6">
+      <div class="bg-amber-500/15 border border-amber-500/50 rounded-2xl p-4">
         <a :href="todayTournament ? `results.html?id=${todayTournament.id}` : '#'"
-          class="flex items-start gap-4 hover:opacity-90 transition-opacity">
-          <img src="icons/tournament.webp" alt="Active" class="w-16 h-16 flex-shrink-0 object-contain">
+          class="flex items-center gap-3 hover:opacity-90 transition-opacity">
+          <img src="icons/tournament.webp" alt="Active" class="w-12 h-12 flex-shrink-0 object-contain">
           <div class="flex-1 min-w-0 overflow-hidden">
-            <div class="text-sm text-amber-400 font-bold uppercase tracking-wider mb-1">Tournament Today</div>
-            <div class="flex items-center gap-3 flex-wrap mb-1">
-              <span class="text-white font-black text-3xl leading-tight" x-text="todayTournament ? todayTournament.name : ''"></span>
+            <div class="text-xs text-amber-400 font-bold uppercase tracking-wider mb-0.5">Tournament Today</div>
+            <div class="flex items-center gap-2 flex-wrap mb-0.5">
+              <span class="text-white font-black text-2xl leading-tight" x-text="todayTournament ? todayTournament.name : ''"></span>
               <a x-show="todayTournament && todayTournament.mapsLink"
                 :href="todayTournament ? todayTournament.mapsLink : '#'" target="_blank" rel="noopener noreferrer"
                 @click.stop
@@ -81,17 +81,16 @@
                 📍 Map
               </a>
             </div>
-            <div class="text-slate-300 text-lg mb-2" x-text="todayTournament ? (todayTournament.locationName || '') : ''"></div>
-            <div class="flex gap-4 mt-2 flex-wrap">
+            <div class="text-slate-300 text-base mb-1" x-text="todayTournament ? (todayTournament.locationName || '') : ''"></div>
+            <div class="flex gap-3 flex-wrap">
               <span x-show="todayTournament && todayTournament.startTime"
-                class="text-sm text-amber-300 font-semibold">🕐 Start <span x-text="todayTournament ? formatTime(todayTournament.startTime) : ''"></span></span>
+                class="text-xs text-amber-300 font-semibold">🕐 Start <span x-text="todayTournament ? formatTime(todayTournament.startTime) : ''"></span></span>
               <span x-show="todayTournament && todayTournament.noWakeTime"
-                class="text-sm text-slate-300 font-semibold">⚓ No wake <span x-text="todayTournament ? formatTime(todayTournament.noWakeTime) : ''"></span></span>
+                class="text-xs text-slate-300 font-semibold">⚓ No wake <span x-text="todayTournament ? formatTime(todayTournament.noWakeTime) : ''"></span></span>
               <span x-show="todayTournament && todayTournament.sizeLimit"
-                class="text-sm text-slate-300 font-semibold">📏 <span x-text="todayTournament ? todayTournament.sizeLimit : ''"></span>" min</span>
+                class="text-xs text-slate-300 font-semibold">📏 <span x-text="todayTournament ? todayTournament.sizeLimit : ''"></span>" min</span>
             </div>
           </div>
-          <span class="text-amber-400 text-2xl flex-shrink-0 mt-1">→</span>
         </a>
       </div>
     </div>
