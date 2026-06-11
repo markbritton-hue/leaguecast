@@ -72,7 +72,15 @@
           <img src="icons/tournament.webp" alt="Active" class="w-16 h-16 flex-shrink-0 object-contain">
           <div class="flex-1 min-w-0 overflow-hidden">
             <div class="text-sm text-amber-400 font-bold uppercase tracking-wider mb-1">Tournament Today</div>
-            <div class="text-white font-black text-3xl leading-tight mb-1" x-text="todayTournament ? todayTournament.name : ''"></div>
+            <div class="flex items-center gap-3 flex-wrap mb-1">
+              <span class="text-white font-black text-3xl leading-tight" x-text="todayTournament ? todayTournament.name : ''"></span>
+              <a x-show="todayTournament && todayTournament.mapsLink"
+                :href="todayTournament ? todayTournament.mapsLink : '#'" target="_blank" rel="noopener noreferrer"
+                @click.stop
+                class="inline-flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/35 text-amber-300 font-semibold px-3 py-1 rounded-lg border border-amber-500/50 hover:border-amber-400 transition-colors text-sm flex-shrink-0">
+                📍 Map
+              </a>
+            </div>
             <div class="text-slate-300 text-lg mb-2" x-text="todayTournament ? (todayTournament.locationName || '') : ''"></div>
             <div class="flex gap-4 mt-2 flex-wrap">
               <span x-show="todayTournament && todayTournament.startTime"
@@ -85,12 +93,6 @@
           </div>
           <span class="text-amber-400 text-2xl flex-shrink-0 mt-1">→</span>
         </a>
-        <div x-show="todayTournament && todayTournament.mapsLink" class="mt-4">
-          <a :href="todayTournament ? todayTournament.mapsLink : '#'" target="_blank" rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 bg-amber-500/20 hover:bg-amber-500/35 text-amber-300 font-semibold px-4 py-2 rounded-xl border border-amber-500/50 hover:border-amber-400 transition-colors text-sm">
-            📍 Open in Maps
-          </a>
-        </div>
       </div>
     </div>
 
