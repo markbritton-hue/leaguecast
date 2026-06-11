@@ -56,13 +56,20 @@
     <div x-show="!loading" class="space-y-3">
       <template x-for="t in tournaments" :key="t.id">
         <div class="border rounded-xl p-4 transition-colors"
-          :class="t.status === 'open' ? 'bg-forest-700/20 border-forest-500/50' : 'bg-navy-800 border-navy-700'">
+          :id="isToday(t) ? 'today-tournament' : ''"
+          :class="isToday(t)
+            ? 'bg-amber-500/15 border-amber-400/60 ring-1 ring-amber-400/40 shadow-lg shadow-amber-500/10'
+            : t.status === 'open' ? 'bg-forest-700/20 border-forest-500/50' : 'bg-navy-800 border-navy-700'">
 
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="font-bold text-white text-lg" x-text="t.name"></span>
-                <span x-show="t.status === 'open'"
+                <span x-show="isToday(t)"
+                  class="flex items-center gap-1 text-xs bg-amber-500 text-amber-950 font-black px-2.5 py-1 rounded-full tracking-wide">
+                  ⭐ TODAY
+                </span>
+                <span x-show="t.status === 'open' && !isToday(t)"
                   class="flex items-center gap-1 text-xs bg-forest-600 text-forest-300 font-bold px-2.5 py-1 rounded-full">
                   <span class="w-1.5 h-1.5 rounded-full bg-forest-400 animate-pulse"></span> ACTIVE
                 </span>
@@ -135,7 +142,21 @@
               counts[t.id] = snap.size;
             }));
             this.photoCounts = counts;
+            // Scroll to today's tournament after DOM updates
+            this.$nextTick(() => {
+              const el = document.getElementById('today-tournament');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
           });
+        },
+
+        isToday(t) {
+          if (!t.date) return false;
+          const d = t.date.toDate ? t.date.toDate() : new Date(t.date);
+          const today = new Date();
+          return d.getFullYear() === today.getFullYear()
+            && d.getMonth() === today.getMonth()
+            && d.getDate() === today.getDate();
         },
 
         formatDate(ts) {
