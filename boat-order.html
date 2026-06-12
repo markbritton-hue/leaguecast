@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeagueCast — Boat Call Out</title>
+  <link rel="icon" href="LTD-transparent.png" type="image/png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            navy: { 950: '#060a14', 900: '#0a0f1e', 800: '#0d1530', 700: '#1a2444', 600: '#243060' },
+            forest: { 700: '#1a4731', 600: '#1e5c3a', 500: '#2d7a52', 400: '#3a9966' },
+            amber: { 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706' }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="./light-mode.css">
+  <script src="./theme.js"></script>
+</head>
+<body class="bg-navy-900 text-slate-100 min-h-screen">
+
+  <script src="./firebase-init.js"></script>
+
+  <nav class="bg-navy-800 border-b border-forest-700 px-4 py-3 flex items-center justify-between">
+    <a href="index.html" class="text-amber-400 font-bold text-xl flex items-center gap-0 p-0"><img src="icons/Leaguecastlogotrans.webp" alt="LeagueCast" class="h-12 w-auto object-contain"> LeagueCast<span class="text-xs font-mono text-white ml-1.5 self-end mb-1">v2.0.0</span></a>
+    <div class="flex items-center gap-2">
+      <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-navy-700 transition-colors text-xl">☀️</button>
+      <a href="schedule.html" class="bg-navy-700 hover:bg-navy-600 text-slate-200 hover:text-amber-400 px-4 py-2 rounded-lg font-semibold text-sm border border-navy-600 hover:border-amber-400 transition-colors">← Schedule</a>
+    </div>
+  </nav>
+
+  <main class="p-4 max-w-lg mx-auto" x-data="boatOrderPage" x-init="init()">
+
+    <!-- Header -->
+    <div class="pt-4 mb-6">
+      <div class="text-xs text-amber-400 font-bold uppercase tracking-wider mb-1">Boat Call Out</div>
+      <h1 class="text-2xl font-black text-white" x-text="tournament ? tournament.name : '—'"></h1>
+      <div class="text-slate-400 text-sm mt-0.5" x-text="tournament ? formatDate(tournament.date) : ''"></div>
+      <div x-show="tournament && tournament.locationName" class="text-slate-500 text-xs mt-0.5" x-text="tournament ? tournament.locationName : ''"></div>
+    </div>
+
+    <!-- Loading -->
+    <div x-show="loading" class="flex justify-center py-16">
+      <div class="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+    <!-- No checkins yet -->
+    <div x-show="!loading && boats.length === 0" class="text-center py-16">
+      <div class="text-5xl mb-4">🚤</div>
+      <div class="text-slate-400 text-lg font-semibold">No boats checked in yet</div>
+      <div class="text-slate-600 text-sm mt-1">Check-in data will appear here once teams arrive.</div>
+    </div>
+
+    <!-- Boat list -->
+    <div x-show="!loading && boats.length > 0" class="space-y-3">
+
+      <!-- Start boat -->
+      <template x-if="startBoat">
+        <div>
+          <div class="text-xs text-red-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+            <span class="flex-1 h-px bg-red-900"></span>
+            Start Boat
+            <span class="flex-1 h-px bg-red-900"></span>
+          </div>
+          <div class="bg-red-950/60 border border-red-700/70 rounded-2xl p-4 flex items-center gap-4">
+            <div class="w-16 h-16 rounded-xl bg-red-600 flex items-center justify-center text-3xl flex-shrink-0 shadow-lg shadow-red-900/50">
+              🚤
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-red-300 text-xs font-bold uppercase tracking-wider mb-0.5">Goes Out First</div>
+              <div class="text-white font-black text-xl leading-tight" x-text="startBoat.teamName"></div>
+              <div class="text-slate-400 text-sm" x-text="startBoat.anglers"></div>
+            </div>
+            <div class="text-red-400 text-4xl font-black flex-shrink-0 opacity-30">#1</div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Call order -->
+      <template x-if="orderedBoats.length > 0">
+        <div>
+          <div class="text-xs text-amber-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+            <span class="flex-1 h-px bg-navy-700"></span>
+            Call Order
+            <span class="flex-1 h-px bg-navy-700"></span>
+          </div>
+          <div class="space-y-2">
+            <template x-for="(boat, index) in orderedBoats" :key="boat.checkinId">
+              <div class="bg-navy-800 border border-navy-700 rounded-xl p-3 flex items-center gap-3">
+                <!-- Call position -->
+                <div class="w-8 text-center flex-shrink-0">
+                  <span class="text-slate-500 text-sm font-bold" x-text="'#' + (index + (startBoat ? 2 : 1))"></span>
+                </div>
+                <!-- Boat number badge -->
+                <div class="w-14 h-14 rounded-xl bg-amber-500 flex items-center justify-center flex-shrink-0 shadow-md">
+                  <span class="text-navy-900 font-black text-2xl" x-text="boat.boatNumber"></span>
+                </div>
+                <!-- Team info -->
+                <div class="flex-1 min-w-0">
+                  <div class="text-white font-bold text-base leading-tight" x-text="boat.teamName"></div>
+                  <div class="text-slate-400 text-sm truncate" x-text="boat.anglers"></div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+
+      <!-- Total count -->
+      <div class="text-center pt-4 pb-2">
+        <span class="text-slate-600 text-xs" x-text="boats.length + ' boat' + (boats.length !== 1 ? 's' : '') + ' checked in'"></span>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    document.addEventListener('alpine:init', () => {
+      const db = firebase.firestore();
+
+      Alpine.data('boatOrderPage', () => ({
+        tournament: null,
+        boats: [],
+        startBoat: null,
+        orderedBoats: [],
+        loading: true,
+
+        async init() {
+          const params = new URLSearchParams(location.search);
+          const tid = params.get('id');
+          if (!tid) { this.loading = false; return; }
+
+          // Load tournament info
+          const tDoc = await db.collection('tournaments').doc(tid).get();
+          if (tDoc.exists) this.tournament = { id: tDoc.id, ...tDoc.data() };
+
+          // Load teams map
+          const teamsSnap = await db.collection('teams').get();
+          const teamsMap = {};
+          teamsSnap.forEach(d => { teamsMap[d.id] = d.data(); });
+
+          // Load checkins for this tournament, live
+          db.collection('checkins')
+            .where('tournamentId', '==', tid)
+            .onSnapshot(snap => {
+              const entries = snap.docs.map(d => {
+                const c = d.data();
+                const team = teamsMap[c.teamId] || {};
+                return {
+                  checkinId: d.id,
+                  teamId: c.teamId,
+                  boatNumber: c.boatNumber,
+                  startBoat: !!c.startBoat,
+                  teamName: team.teamName || 'Unknown Team',
+                  anglers: [team.angler1?.name, team.angler2?.name].filter(Boolean).join(' & '),
+                };
+              });
+
+              this.startBoat = entries.find(e => e.startBoat) || null;
+              this.orderedBoats = entries
+                .filter(e => !e.startBoat)
+                .sort((a, b) => (a.boatNumber || 0) - (b.boatNumber || 0));
+              this.boats = entries;
+              this.loading = false;
+            });
+        },
+
+        formatDate(ts) {
+          if (!ts) return '';
+          const d = ts.toDate ? ts.toDate() : new Date(ts);
+          return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        },
+      }));
+    });
+  </script>
+</body>
+</html>
