@@ -111,6 +111,10 @@
                 class="bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full leading-none"
                 x-text="photoCounts[t.id]"></span>
             </a>
+            <a :href="`boat-order.html?id=${t.id}`"
+              class="inline-flex items-center gap-2 bg-navy-700 hover:bg-navy-600 text-slate-300 hover:text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors border border-navy-600">
+              🚤 Boat Order
+            </a>
           </div>
         </div>
       </template>
