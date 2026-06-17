@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeagueCast — Fish Call Tags</title>
+  <link rel="icon" href="LTD-transparent.png" type="image/png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            navy: { 950: '#060a14', 900: '#0a0f1e', 800: '#0d1530', 700: '#1a2444', 600: '#243060' },
+            forest: { 700: '#1a4731', 600: '#1e5c3a', 500: '#2d7a52', 400: '#3a9966' },
+            amber: { 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706' }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="./light-mode.css">
+  <script src="./theme.js"></script>
+  <style>
+    .swatch { width: 44px; height: 44px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.15s, border-color 0.15s; flex-shrink: 0; }
+    .swatch:hover { transform: scale(1.15); border-color: rgba(255,255,255,0.5); }
+    .swatch.used { opacity: 0.2; cursor: not-allowed; transform: none !important; border-color: transparent !important; }
+    .fish-card { border-radius: 14px; overflow: hidden; background: rgba(255,255,255,0.04); border: 2px solid rgba(255,255,255,0.08); transition: transform 0.2s, box-shadow 0.2s; }
+    .fish-card:focus-within { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
+    .weight-field input { width: 100%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 0.6rem 0.5rem; color: #e2e8f0; font-size: 1.1rem; font-weight: 700; font-family: inherit; text-align: center; transition: border-color 0.2s; }
+    .weight-field input:focus { outline: none; border-color: rgba(255,255,255,0.4); }
+    .fish-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+    .group-header { grid-column: 1 / -1; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.4rem 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem; }
+    .group-header.top5 { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+    .group-header.others { background: rgba(148,163,184,0.08); color: #64748b; border: 1px solid rgba(148,163,184,0.15); margin-top: 0.25rem; }
+    @media (max-width: 500px) { .fish-grid { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+</head>
+<body class="bg-navy-900 text-slate-100 min-h-screen">
+
+  <script src="./firebase-init.js"></script>
+  <script src="./auth-guard.js"></script>
+
+  <nav class="bg-navy-800 border-b border-forest-700 px-4 py-3 flex items-center justify-between">
+    <a href="index.html" class="text-amber-400 font-bold text-xl flex items-center gap-0 p-0">
+      <img src="icons/Leaguecastlogotrans.webp" alt="LeagueCast" class="h-12 w-auto object-contain"> LeagueCast
+    </a>
+    <div class="flex items-center gap-2">
+      <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-navy-700 transition-colors text-xl">☀️</button>
+      <a href="index.html" class="bg-navy-700 hover:bg-navy-600 text-slate-200 hover:text-amber-400 px-4 py-2 rounded-lg font-semibold text-sm border border-navy-600 hover:border-amber-400 transition-colors">← Home</a>
+    </div>
+  </nav>
+
+  <main class="p-4 max-w-2xl mx-auto pb-16">
+
+    <!-- Header -->
+    <div class="pt-4 mb-5">
+      <div class="text-xs text-amber-400 font-bold uppercase tracking-wider mb-1">Weigh-In Tool</div>
+      <h1 class="text-2xl font-black text-white">Fish Call Tags</h1>
+      <p class="text-slate-500 text-sm mt-0.5">Track individual fish by color tag during call-out</p>
+    </div>
+
+    <!-- Call Out button -->
+    <button id="callout-btn" onclick="toggleCallOut()"
+      class="w-full mb-4 py-3 px-5 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all bg-amber-500 hover:bg-amber-400 text-navy-900 shadow-lg">
+      ↑ Call Out
+    </button>
+
+    <!-- Total bar -->
+    <div class="bg-navy-800 border border-navy-700 rounded-xl px-5 py-3 flex items-center justify-between mb-4">
+      <span class="text-slate-400 font-semibold text-sm">Total Weight</span>
+      <span id="grand-total" class="text-amber-400 font-black text-xl">0 lbs 0 oz</span>
+    </div>
+
+    <!-- Add Tag button -->
+    <button id="add-tag-btn" onclick="toggleColorPicker()"
+      class="w-full mb-3 py-3 px-5 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all bg-forest-600 hover:bg-forest-500 text-white shadow-lg disabled:opacity-40 disabled:cursor-not-allowed">
+      + Add Call Tag
+    </button>
+
+    <!-- Color picker panel -->
+    <div id="color-picker" class="hidden bg-navy-800 border border-navy-700 rounded-xl p-4 mb-4">
+      <p class="text-slate-500 text-sm mb-3">Pick a color for this call tag:</p>
+      <div id="color-swatches" class="flex flex-wrap gap-3"></div>
+    </div>
+
+    <!-- Fish grid -->
+    <div id="fish-grid" class="fish-grid mb-6"></div>
+
+    <!-- Action row -->
+    <div class="flex gap-3">
+      <button onclick="saveData()" class="flex-1 py-3 px-5 rounded-xl font-bold text-base bg-forest-600 hover:bg-forest-500 text-white transition-all flex items-center justify-center gap-2">
+        💾 Save
+      </button>
+      <button onclick="clearAll()" class="py-3 px-5 rounded-xl font-bold text-base bg-navy-700 hover:bg-navy-600 text-slate-300 border border-navy-600 transition-all">
+        Clear All
+      </button>
+    </div>
+    <div id="save-msg" class="mt-3 text-center text-forest-400 text-sm min-h-5"></div>
+
+  </main>
+
+  <script>
+    const ALL_COLORS = ['#3b82f6','#10b981','#a78bfa','#f59e0b','#ef4444','#06b6d4','#f97316','#ec4899'];
+    const STORAGE_KEY = 'leaguecast_calltags';
+
+    let activeTags = [];
+    let pickerOpen = false;
+    let callOutActive = false;
+
+    function ck(color) { return color.replace('#', ''); }
+
+    function renderSwatches() {
+      const used = activeTags.map(t => t.color);
+      const container = document.getElementById('color-swatches');
+      container.innerHTML = '';
+      ALL_COLORS.forEach(color => {
+        const div = document.createElement('div');
+        div.className = 'swatch' + (used.includes(color) ? ' used' : '');
+        div.style.background = color;
+        div.title = color;
+        if (!used.includes(color)) div.onclick = () => addTag(color);
+        container.appendChild(div);
+      });
+      document.getElementById('add-tag-btn').disabled = used.length >= ALL_COLORS.length;
+    }
+
+    function toggleColorPicker() {
+      pickerOpen = !pickerOpen;
+      const panel = document.getElementById('color-picker');
+      const btn = document.getElementById('add-tag-btn');
+      panel.classList.toggle('hidden', !pickerOpen);
+      btn.innerHTML = pickerOpen ? '✕ Cancel' : '+ Add Call Tag';
+    }
+
+    function addTag(color) {
+      activeTags.push({ color, lbs: 0, oz: 0 });
+      renderCard(color);
+      renderSwatches();
+      pickerOpen = false;
+      document.getElementById('color-picker').classList.add('hidden');
+      document.getElementById('add-tag-btn').innerHTML = '+ Add Call Tag';
+      onWeightChange();
+      const lbsInput = document.getElementById('lbs-' + ck(color));
+      if (lbsInput) {
+        lbsInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => lbsInput.focus(), 300);
+      }
+    }
+
+    function renderCard(color) {
+      const grid = document.getElementById('fish-grid');
+      const id = ck(color);
+      const card = document.createElement('div');
+      card.className = 'fish-card';
+      card.dataset.color = color;
+      card.id = 'card-' + id;
+      card.style.borderColor = color + '55';
+      card.innerHTML = `
+        <div style="background:${color}22; padding:0.75rem 1rem;" class="flex items-center justify-between">
+          <div style="background:${color}; width:28px; height:28px; border-radius:50%; flex-shrink:0;"></div>
+          <button onclick="removeTag('${color}')" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:1.1rem;padding:0;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='rgba(255,255,255,0.4)'">✕</button>
+        </div>
+        <div style="padding:0.75rem 1rem 1rem;">
+          <div style="font-size:0.7rem;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.4rem;">Weight</div>
+          <div style="display:flex;gap:0.5rem;align-items:center;" class="weight-inputs">
+            <div class="weight-field" style="flex:1;display:flex;flex-direction:column;gap:0.2rem;">
+              <input type="number" id="lbs-${id}" min="0" max="99" step="1" placeholder="0" inputmode="numeric" oninput="onWeightChange()" style="border-color:${color}44;">
+              <span style="font-size:0.7rem;color:#64748b;text-align:center;">lbs</span>
+            </div>
+            <div style="font-size:1.2rem;color:#475569;padding-top:1rem;">.</div>
+            <div class="weight-field" style="flex:1;display:flex;flex-direction:column;gap:0.2rem;">
+              <input type="number" id="oz-${id}" min="0" max="15" step="1" placeholder="0" inputmode="numeric" oninput="onWeightChange()" style="border-color:${color}44;">
+              <span style="font-size:0.7rem;color:#64748b;text-align:center;">oz</span>
+            </div>
+          </div>
+          <div id="fish-total-${id}" style="margin-top:0.5rem;font-size:0.82rem;color:#94a3b8;text-align:right;"></div>
+        </div>`;
+      grid.appendChild(card);
+    }
+
+    function removeTag(color) {
+      activeTags = activeTags.filter(t => t.color !== color);
+      const card = document.getElementById('card-' + ck(color));
+      if (card) card.remove();
+      renderSwatches();
+      onWeightChange();
+    }
+
+    function getWeight(color) {
+      const id = ck(color);
+      const lbs = parseInt(document.getElementById('lbs-' + id)?.value) || 0;
+      const oz  = parseInt(document.getElementById('oz-'  + id)?.value) || 0;
+      return { lbs, oz, totalOz: lbs * 16 + oz };
+    }
+
+    function fmtW(lbs, oz) { return lbs + ' lbs ' + oz + ' oz'; }
+
+    function onWeightChange() {
+      let grandOz = 0;
+      activeTags.forEach(t => {
+        const w = getWeight(t.color);
+        const el = document.getElementById('fish-total-' + ck(t.color));
+        if (el) el.innerHTML = w.totalOz > 0 ? '<strong style="color:#e2e8f0;font-size:0.95rem;">' + fmtW(w.lbs, w.oz) + '</strong>' : '';
+        grandOz += w.totalOz;
+      });
+      document.getElementById('grand-total').textContent = fmtW(Math.floor(grandOz / 16), grandOz % 16);
+    }
+
+    function saveData() {
+      const data = activeTags.map(t => ({ color: t.color, ...getWeight(t.color) }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      const msg = document.getElementById('save-msg');
+      msg.textContent = '✓ Saved to this device';
+      setTimeout(() => msg.textContent = '', 3000);
+    }
+
+    function loadSaved() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      try {
+        const data = JSON.parse(raw);
+        data.forEach(t => {
+          if (!t.color) return;
+          activeTags.push({ color: t.color });
+          renderCard(t.color);
+          if (t.lbs !== undefined) document.getElementById('lbs-' + ck(t.color)).value = t.lbs;
+          if (t.oz  !== undefined) document.getElementById('oz-'  + ck(t.color)).value = t.oz;
+        });
+        renderSwatches();
+        onWeightChange();
+      } catch(e) { console.warn('loadSaved failed', e); }
+    }
+
+    function clearAll() {
+      if (!confirm('Remove all call tags and weights?')) return;
+      activeTags = [];
+      document.getElementById('fish-grid').innerHTML = '';
+      onWeightChange();
+      renderSwatches();
+      localStorage.removeItem(STORAGE_KEY);
+      if (callOutActive) {
+        const btn = document.getElementById('callout-btn');
+        btn.innerHTML = '↑ Call Out';
+        btn.classList.remove('bg-red-500', 'hover:bg-red-400', 'text-white');
+        btn.classList.add('bg-amber-500', 'hover:bg-amber-400', 'text-navy-900');
+        callOutActive = false;
+      }
+    }
+
+    function makeGroupHeader(cls, emoji, label) {
+      const div = document.createElement('div');
+      div.className = 'group-header ' + cls + ' callout-header';
+      div.innerHTML = emoji + ' ' + label;
+      return div;
+    }
+
+    function toggleCallOut() {
+      const grid = document.getElementById('fish-grid');
+      const btn  = document.getElementById('callout-btn');
+
+      if (!callOutActive) {
+        const cards = Array.from(grid.querySelectorAll('.fish-card'));
+        cards.sort((a, b) => {
+          const wA = getWeight(a.dataset.color).totalOz;
+          const wB = getWeight(b.dataset.color).totalOz;
+          if (wA === 0 && wB === 0) return 0;
+          if (wA === 0) return 1;
+          if (wB === 0) return -1;
+          return wB - wA;
+        });
+        const withWeight = cards.filter(c => getWeight(c.dataset.color).totalOz > 0);
+        const noWeight   = cards.filter(c => getWeight(c.dataset.color).totalOz === 0);
+        const top5 = withWeight.slice(0, 5);
+        const rest = [...withWeight.slice(5), ...noWeight];
+
+        grid.innerHTML = '';
+        grid.appendChild(makeGroupHeader('top5', '🏆', 'Top 5'));
+        top5.forEach(c => grid.appendChild(c));
+        if (rest.length > 0) {
+          grid.appendChild(makeGroupHeader('others', '🐟', 'Other Calls'));
+          rest.forEach(c => grid.appendChild(c));
+        }
+        btn.innerHTML = '↺ Reset Order';
+        btn.classList.remove('bg-amber-500', 'hover:bg-amber-400', 'text-navy-900');
+        btn.classList.add('bg-red-600', 'hover:bg-red-500', 'text-white');
+        callOutActive = true;
+      } else {
+        const cards = Array.from(grid.querySelectorAll('.fish-card'));
+        cards.sort((a, b) => {
+          const ai = activeTags.findIndex(t => t.color === a.dataset.color);
+          const bi = activeTags.findIndex(t => t.color === b.dataset.color);
+          return ai - bi;
+        });
+        grid.innerHTML = '';
+        cards.forEach(c => grid.appendChild(c));
+        btn.innerHTML = '↑ Call Out';
+        btn.classList.remove('bg-red-600', 'hover:bg-red-500', 'text-white');
+        btn.classList.add('bg-amber-500', 'hover:bg-amber-400', 'text-navy-900');
+        callOutActive = false;
+      }
+    }
+
+    renderSwatches();
+    loadSaved();
+  </script>
+
+</body>
+</html>
