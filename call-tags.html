@@ -264,18 +264,18 @@
       const list = document.getElementById('callout-list');
       list.innerHTML = '';
 
-      if (allSorted.length < 5) {
-        list.innerHTML = `<div class="text-slate-500 text-sm text-center py-6">Need ${5 - allSorted.length} more fish to fill Top 5.</div>`;
+      if (allSorted.length < 6) {
+        list.innerHTML = `<div class="text-slate-500 text-sm text-center py-6">No call out — need a 6th fish heavier than your lightest to trigger a cull.</div>`;
       } else {
-        // Fish #5 — lightest that makes the top 5 cut
-        const next = allSorted[4];
+        // Fish #6 in weight order = the fish bumped out of the top 5 = the called out fish
+        const calledOut = allSorted[5];
         list.innerHTML = `
           <div class="text-center py-4">
-            <div class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-1">Lightest of Top 5</div>
-            <div class="text-xs text-slate-500 mb-4">Call this fish first</div>
-            <div style="background:${next.color}; width:80px; height:80px; border-radius:50%; margin:0 auto 1.25rem; box-shadow:0 0 28px ${next.color}99;"></div>
-            <div class="text-6xl font-black text-white mb-1">${next.val.toFixed(3)}</div>
-            <div class="text-xl font-bold text-amber-400">lbs</div>
+            <div class="text-xs font-bold uppercase tracking-wider text-red-400 mb-1">🔴 Call Out</div>
+            <div class="text-xs text-slate-500 mb-4">This fish is out of the bag</div>
+            <div style="background:${calledOut.color}; width:80px; height:80px; border-radius:50%; margin:0 auto 1.25rem; box-shadow:0 0 28px ${calledOut.color}99;"></div>
+            <div class="text-6xl font-black text-white mb-1">${calledOut.val.toFixed(3)}</div>
+            <div class="text-xl font-bold text-red-400">lbs</div>
           </div>
         `;
       }
