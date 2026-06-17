@@ -59,22 +59,28 @@
       <p class="text-slate-500 text-sm mt-0.5">Track individual fish by color tag during call-out</p>
     </div>
 
-    <!-- Call Out button -->
-    <button id="callout-btn" onclick="toggleCallOut()"
-      class="w-full mb-4 py-3 px-5 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all bg-amber-500 hover:bg-amber-400 text-navy-900 shadow-lg">
-      ↑ Call Out
-    </button>
+    <!-- Top action cards row -->
+    <div class="grid grid-cols-2 gap-3 mb-3">
 
-    <!-- Total bar -->
-    <div class="bg-navy-800 border border-navy-700 rounded-xl px-5 py-3 flex items-center justify-between mb-4">
-      <span class="text-slate-400 font-semibold text-sm">Total Weight</span>
-      <span id="grand-total" class="text-amber-400 font-black text-xl">0.000 lbs</span>
+      <!-- Call Out card-button -->
+      <button id="callout-btn" onclick="toggleCallOut()"
+        class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-navy-900 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 shadow-lg transition-all border-2 border-amber-400/50">
+        <span class="text-2xl">🎣</span>
+        <span class="font-black text-sm uppercase tracking-wide">Call Out</span>
+      </button>
+
+      <!-- Total Weight card -->
+      <div class="bg-navy-800 border-2 border-navy-600 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 shadow-lg">
+        <span class="text-xs font-bold uppercase tracking-wide text-slate-500">Total Weight</span>
+        <span id="grand-total" class="font-black text-lg text-amber-400 leading-tight">0.000 lbs</span>
+      </div>
+
     </div>
 
-    <!-- Add Tag button -->
+    <!-- Add Tag card-button -->
     <button id="add-tag-btn" onclick="toggleColorPicker()"
-      class="w-full mb-3 py-3 px-5 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all bg-forest-600 hover:bg-forest-500 text-white shadow-lg disabled:opacity-40 disabled:cursor-not-allowed">
-      + Add Call Tag
+      class="w-full mb-3 bg-forest-700 hover:bg-forest-600 active:scale-95 border-2 border-forest-600/60 text-white rounded-2xl px-5 py-4 font-black text-base flex items-center justify-center gap-2 transition-all shadow-lg disabled:opacity-40 disabled:cursor-not-allowed">
+      <span class="text-xl">＋</span> Add Call Tag
     </button>
 
     <!-- Color picker panel -->
