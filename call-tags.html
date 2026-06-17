@@ -68,7 +68,7 @@
     <!-- Total bar -->
     <div class="bg-navy-800 border border-navy-700 rounded-xl px-5 py-3 flex items-center justify-between mb-4">
       <span class="text-slate-400 font-semibold text-sm">Total Weight</span>
-      <span id="grand-total" class="text-amber-400 font-black text-xl">0 lbs 0 oz</span>
+      <span id="grand-total" class="text-amber-400 font-black text-xl">0.000 lbs</span>
     </div>
 
     <!-- Add Tag button -->
@@ -203,7 +203,7 @@
         if (el) el.innerHTML = w.totalOz > 0 ? '<strong style="color:#e2e8f0;font-size:0.95rem;">' + fmtW(w.lbs, w.oz) + '</strong>' : '';
         grandOz += w.totalOz;
       });
-      document.getElementById('grand-total').textContent = fmtW(Math.floor(grandOz / 16), grandOz % 16);
+      document.getElementById('grand-total').textContent = (grandOz / 16).toFixed(3) + ' lbs';
     }
 
     function saveData() {
