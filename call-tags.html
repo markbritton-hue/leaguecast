@@ -248,33 +248,60 @@
     }
 
     function toggleCallOut() {
-      const sorted = activeTags
+      const allSorted = activeTags
         .map(t => ({ color: t.color, val: getWeight(t.color).val }))
         .filter(t => t.val > 0)
         .sort((a, b) => b.val - a.val);
 
+      const top5 = allSorted.slice(0, 5).reverse(); // lightest of top 5 called first
+      const others = allSorted.slice(5);             // remaining heaviest-first
+
       const list = document.getElementById('callout-list');
       list.innerHTML = '';
 
-      if (sorted.length === 0) {
+      if (allSorted.length === 0) {
         list.innerHTML = '<div class="text-slate-500 text-sm text-center py-4">No fish weights entered yet.</div>';
       } else {
-        const rankEmojis = ['🥇','🥈','🥉','4️⃣','5️⃣'];
-        sorted.forEach((t, i) => {
-          const isTop5 = i < 5;
+        // Top 5 section header
+        if (top5.length > 0) {
+          const hdr = document.createElement('div');
+          hdr.className = 'text-xs font-bold uppercase tracking-wider text-amber-400 px-1 pt-1 pb-0.5';
+          hdr.textContent = '🏆 Top 5 — Call Out Order';
+          list.appendChild(hdr);
+        }
+        top5.forEach((t, i) => {
+          const callPos = top5.length - i; // lightest = position 5, heaviest = position 1
           const row = document.createElement('div');
-          row.className = 'flex items-center gap-3 py-2 px-3 rounded-xl ' + (isTop5 ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-navy-900/60');
+          row.className = 'flex items-center gap-3 py-2.5 px-3 rounded-xl bg-amber-500/10 border border-amber-500/20';
           row.innerHTML = `
-            <span class="text-xl w-7 text-center flex-shrink-0">${isTop5 ? rankEmojis[i] : '🐟'}</span>
+            <span class="font-black text-amber-400 w-7 text-center flex-shrink-0 text-base">#${callPos}</span>
             <div style="background:${t.color}; width:22px; height:22px; border-radius:50%; flex-shrink:0;"></div>
-            <span class="flex-1 font-bold text-sm ${isTop5 ? 'text-white' : 'text-slate-400'}">${isTop5 ? 'Top ' + (i+1) : 'Call ' + (i+1)}</span>
-            <span class="font-black text-base ${isTop5 ? 'text-amber-400' : 'text-slate-400'}">${t.val.toFixed(3)} lbs</span>
+            <span class="flex-1 font-bold text-sm text-white">Call ${callPos}</span>
+            <span class="font-black text-base text-amber-400">${t.val.toFixed(3)} lbs</span>
           `;
           list.appendChild(row);
         });
+
+        if (others.length > 0) {
+          const hdr = document.createElement('div');
+          hdr.className = 'text-xs font-bold uppercase tracking-wider text-slate-500 px-1 pt-3 pb-0.5';
+          hdr.textContent = '🐟 Other Calls';
+          list.appendChild(hdr);
+          others.forEach((t, i) => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center gap-3 py-2 px-3 rounded-xl bg-navy-900/60';
+            row.innerHTML = `
+              <span class="text-slate-500 w-7 text-center flex-shrink-0 text-sm font-bold">${top5.length + i + 1}</span>
+              <div style="background:${t.color}; width:22px; height:22px; border-radius:50%; flex-shrink:0;"></div>
+              <span class="flex-1 font-bold text-sm text-slate-400">Fish ${top5.length + i + 1}</span>
+              <span class="font-black text-base text-slate-400">${t.val.toFixed(3)} lbs</span>
+            `;
+            list.appendChild(row);
+          });
+        }
       }
 
-      const total = sorted.reduce((s, t) => s + t.val, 0);
+      const total = allSorted.reduce((s, t) => s + t.val, 0);
       document.getElementById('callout-total').textContent = total.toFixed(3) + ' lbs';
       document.getElementById('callout-modal').classList.remove('hidden');
     }
