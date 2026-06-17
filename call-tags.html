@@ -99,13 +99,30 @@
 
   </main>
 
+  <!-- Call Out Modal -->
+  <div id="callout-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-end justify-center" onclick="closeCallOut()">
+    <div class="bg-navy-800 border-t border-navy-600 rounded-t-2xl w-full max-w-lg shadow-2xl pb-safe" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between px-5 pt-5 pb-3 border-b border-navy-700">
+        <div>
+          <div class="text-xs text-amber-400 font-bold uppercase tracking-wider mb-0.5">Call Out Order</div>
+          <div class="text-white font-black text-lg">Fish Rankings</div>
+        </div>
+        <button onclick="closeCallOut()" class="text-slate-400 hover:text-white text-2xl leading-none px-2">×</button>
+      </div>
+      <div id="callout-list" class="px-5 py-3 space-y-2 max-h-96 overflow-y-auto"></div>
+      <div class="px-5 pb-5 pt-2 border-t border-navy-700 flex items-center justify-between">
+        <span class="text-slate-400 text-sm font-semibold">Total</span>
+        <span id="callout-total" class="text-amber-400 font-black text-lg"></span>
+      </div>
+    </div>
+  </div>
+
   <script>
     const ALL_COLORS = ['#3b82f6','#10b981','#a78bfa','#f59e0b','#ef4444','#06b6d4','#f97316','#ec4899'];
     const STORAGE_KEY = 'leaguecast_calltags';
 
     let activeTags = [];
     let pickerOpen = false;
-    let callOutActive = false;
 
     function ck(color) { return color.replace('#', ''); }
 
@@ -228,66 +245,42 @@
       onWeightChange();
       renderSwatches();
       localStorage.removeItem(STORAGE_KEY);
-      if (callOutActive) {
-        const btn = document.getElementById('callout-btn');
-        btn.innerHTML = '↑ Call Out';
-        btn.classList.remove('bg-red-500', 'hover:bg-red-400', 'text-white');
-        btn.classList.add('bg-amber-500', 'hover:bg-amber-400', 'text-navy-900');
-        callOutActive = false;
-      }
-    }
-
-    function makeGroupHeader(cls, emoji, label) {
-      const div = document.createElement('div');
-      div.className = 'group-header ' + cls + ' callout-header';
-      div.innerHTML = emoji + ' ' + label;
-      return div;
     }
 
     function toggleCallOut() {
-      const grid = document.getElementById('fish-grid');
-      const btn  = document.getElementById('callout-btn');
+      const sorted = activeTags
+        .map(t => ({ color: t.color, val: getWeight(t.color).val }))
+        .filter(t => t.val > 0)
+        .sort((a, b) => b.val - a.val);
 
-      if (!callOutActive) {
-        const cards = Array.from(grid.querySelectorAll('.fish-card'));
-        cards.sort((a, b) => {
-          const wA = getWeight(a.dataset.color).totalOz;
-          const wB = getWeight(b.dataset.color).totalOz;
-          if (wA === 0 && wB === 0) return 0;
-          if (wA === 0) return 1;
-          if (wB === 0) return -1;
-          return wB - wA;
-        });
-        const withWeight = cards.filter(c => getWeight(c.dataset.color).totalOz > 0);
-        const noWeight   = cards.filter(c => getWeight(c.dataset.color).totalOz === 0);
-        const top5 = withWeight.slice(0, 5);
-        const rest = [...withWeight.slice(5), ...noWeight];
+      const list = document.getElementById('callout-list');
+      list.innerHTML = '';
 
-        grid.innerHTML = '';
-        grid.appendChild(makeGroupHeader('top5', '🏆', 'Top 5'));
-        top5.forEach(c => grid.appendChild(c));
-        if (rest.length > 0) {
-          grid.appendChild(makeGroupHeader('others', '🐟', 'Other Calls'));
-          rest.forEach(c => grid.appendChild(c));
-        }
-        btn.innerHTML = '↺ Reset Order';
-        btn.classList.remove('bg-amber-500', 'hover:bg-amber-400', 'text-navy-900');
-        btn.classList.add('bg-red-600', 'hover:bg-red-500', 'text-white');
-        callOutActive = true;
+      if (sorted.length === 0) {
+        list.innerHTML = '<div class="text-slate-500 text-sm text-center py-4">No fish weights entered yet.</div>';
       } else {
-        const cards = Array.from(grid.querySelectorAll('.fish-card'));
-        cards.sort((a, b) => {
-          const ai = activeTags.findIndex(t => t.color === a.dataset.color);
-          const bi = activeTags.findIndex(t => t.color === b.dataset.color);
-          return ai - bi;
+        const rankEmojis = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+        sorted.forEach((t, i) => {
+          const isTop5 = i < 5;
+          const row = document.createElement('div');
+          row.className = 'flex items-center gap-3 py-2 px-3 rounded-xl ' + (isTop5 ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-navy-900/60');
+          row.innerHTML = `
+            <span class="text-xl w-7 text-center flex-shrink-0">${isTop5 ? rankEmojis[i] : '🐟'}</span>
+            <div style="background:${t.color}; width:22px; height:22px; border-radius:50%; flex-shrink:0;"></div>
+            <span class="flex-1 font-bold text-sm ${isTop5 ? 'text-white' : 'text-slate-400'}">${isTop5 ? 'Top ' + (i+1) : 'Call ' + (i+1)}</span>
+            <span class="font-black text-base ${isTop5 ? 'text-amber-400' : 'text-slate-400'}">${t.val.toFixed(3)} lbs</span>
+          `;
+          list.appendChild(row);
         });
-        grid.innerHTML = '';
-        cards.forEach(c => grid.appendChild(c));
-        btn.innerHTML = '↑ Call Out';
-        btn.classList.remove('bg-red-600', 'hover:bg-red-500', 'text-white');
-        btn.classList.add('bg-amber-500', 'hover:bg-amber-400', 'text-navy-900');
-        callOutActive = false;
       }
+
+      const total = sorted.reduce((s, t) => s + t.val, 0);
+      document.getElementById('callout-total').textContent = total.toFixed(3) + ' lbs';
+      document.getElementById('callout-modal').classList.remove('hidden');
+    }
+
+    function closeCallOut() {
+      document.getElementById('callout-modal').classList.add('hidden');
     }
 
     renderSwatches();
