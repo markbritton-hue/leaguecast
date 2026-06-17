@@ -200,7 +200,7 @@
       activeTags.forEach(t => {
         const w = getWeight(t.color);
         const el = document.getElementById('fish-total-' + ck(t.color));
-        if (el) el.innerHTML = w.totalOz > 0 ? '<strong style="color:#e2e8f0;font-size:0.95rem;">' + fmtW(w.lbs, w.oz) + '</strong>' : '';
+        if (el) el.innerHTML = w.totalOz > 0 ? '<strong style="color:#e2e8f0;font-size:0.95rem;">' + (w.totalOz / 16).toFixed(3) + ' lbs</strong>' : '';
         grandOz += w.totalOz;
       });
       document.getElementById('grand-total').textContent = (grandOz / 16).toFixed(3) + ' lbs';
