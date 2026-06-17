@@ -219,7 +219,6 @@
         grandLbs += w.val;
       });
       document.getElementById('grand-total').textContent = grandLbs.toFixed(3) + ' lbs';
-      sortGrid();
     }
 
     function saveData() {
@@ -256,6 +255,7 @@
     }
 
     function toggleCallOut() {
+      sortGrid();
       const allSorted = activeTags
         .map(t => ({ color: t.color, val: getWeight(t.color).val }))
         .filter(t => t.val > 0)
