@@ -92,10 +92,32 @@
           <div class="p-2 text-xs text-slate-400">
             <div class="font-semibold text-slate-200" x-text="photo.uploadedBy"></div>
           </div>
-          <button x-show="isAdmin" @click.stop="deletePhoto(photo.id)" class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold shadow-lg">🗑️</button>
+          <div x-show="isAdmin" class="absolute top-1 right-1 flex gap-1">
+            <button @click.stop="openRename(photo)" class="bg-navy-700 hover:bg-navy-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm shadow-lg">✏️</button>
+            <button @click.stop="deletePhoto(photo.id)" class="bg-red-600 hover:bg-red-700 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold shadow-lg">🗑️</button>
+          </div>
         </div>
       </template>
     </div>
+    <!-- Rename Modal -->
+    <div x-show="renameModal" x-transition @click.self="renameModal = false"
+      class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
+      <div class="bg-navy-800 border border-navy-600 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+        <h3 class="text-lg font-bold text-white mb-4">Rename Photo</h3>
+        <input x-model="renameName" type="text" placeholder="Enter name..."
+          @keydown.enter="saveRename()" @keydown.escape="renameModal = false"
+          class="w-full px-3 py-3 bg-navy-700 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 mb-4">
+        <div x-show="renameError" class="text-red-400 text-sm mb-3" x-text="renameError"></div>
+        <div class="flex gap-3">
+          <button @click="saveRename()" :disabled="renameSaving"
+            class="flex-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-navy-900 font-bold py-2 rounded-lg transition-colors">
+            <span x-text="renameSaving ? 'Saving...' : 'Save'"></span>
+          </button>
+          <button @click="renameModal = false" class="flex-1 bg-navy-700 hover:bg-navy-600 text-white font-bold py-2 rounded-lg transition-colors">Cancel</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Lightbox -->
     <template x-if="lightboxOpen && photos[currentPhotoIdx]">
       <div class="fixed inset-0 bg-black z-50 flex flex-col"
@@ -144,6 +166,11 @@
         lightboxOpen: false,
         currentPhotoIdx: 0,
         isAdmin: false,
+        renameModal: false,
+        renamePhoto: null,
+        renameName: '',
+        renameSaving: false,
+        renameError: '',
 
         async init() {
           firebase.auth().onAuthStateChanged(user => {
@@ -267,6 +294,30 @@
 
         nextPhoto() {
           this.currentPhotoIdx = (this.currentPhotoIdx + 1) % this.photos.length;
+        },
+
+        openRename(photo) {
+          this.renamePhoto = photo;
+          this.renameName = photo.uploadedBy || '';
+          this.renameError = '';
+          this.renameModal = true;
+        },
+
+        async saveRename() {
+          const name = this.renameName.trim();
+          if (!name) { this.renameError = 'Name cannot be empty.'; return; }
+          this.renameSaving = true;
+          this.renameError = '';
+          try {
+            await db.collection('tournaments').doc(tournamentId).collection('photos').doc(this.renamePhoto.id).update({ uploadedBy: name });
+            const photo = this.photos.find(p => p.id === this.renamePhoto.id);
+            if (photo) photo.uploadedBy = name;
+            this.renameModal = false;
+          } catch (err) {
+            this.renameError = 'Error saving. Please try again.';
+            console.error(err);
+          }
+          this.renameSaving = false;
         },
 
         async deletePhoto(photoId) {
