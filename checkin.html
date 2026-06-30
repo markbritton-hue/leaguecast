@@ -35,6 +35,10 @@
   <nav class="bg-navy-800 border-b border-forest-700 px-4 py-3 flex items-center justify-between">
     <a href="index.html" class="text-amber-400 font-bold text-xl flex items-center gap-0 p-0"><img src="icons/Leaguecastlogotrans.webp" alt="LeagueCast" class="h-12 w-auto object-contain"> LeagueCast</a>
     <div class="flex items-center gap-2">
+      <button onclick="document.dispatchEvent(new CustomEvent('open-add-team'))"
+        class="bg-forest-600 hover:bg-forest-500 text-white px-4 py-2 rounded-lg font-semibold text-sm border border-forest-500 transition-colors">
+        + Team
+      </button>
       <button onclick="history.back()" class="bg-navy-700 hover:bg-navy-600 text-slate-200 hover:text-amber-400 px-4 py-2 rounded-lg font-semibold text-sm border border-navy-600 hover:border-amber-400 transition-colors">← Back</button>
       <button onclick="firebase.auth().signOut().then(() => window.location.href='login.html')"
         class="bg-navy-700 hover:bg-red-900 text-slate-400 hover:text-red-400 px-4 py-2 rounded-lg text-sm font-semibold border border-navy-600 hover:border-red-800 transition-colors">
@@ -130,6 +134,43 @@
       </div>
     </div>
 
+    <!-- Add Team Modal -->
+    <div x-show="showAddTeam" x-transition @click="showAddTeam = false"
+      class="fixed inset-0 bg-black/70 flex items-end justify-center z-50">
+      <div class="bg-navy-800 border-t border-navy-600 rounded-t-2xl p-5 w-full max-w-lg shadow-2xl" @click.stop>
+
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-lg font-bold text-white">Add New Team</h2>
+          <button @click="showAddTeam = false" class="text-slate-400 hover:text-white text-2xl leading-none">×</button>
+        </div>
+
+        <div class="space-y-3">
+          <div class="bg-navy-900 border border-navy-700 rounded-xl p-4">
+            <label class="block text-sm font-semibold text-slate-300 mb-2">Team Name</label>
+            <input type="text" x-model="newTeam.teamName" placeholder="e.g. Bass Masters"
+              class="w-full bg-navy-800 border border-navy-600 rounded-lg px-3 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-amber-400 transition-colors">
+          </div>
+          <div class="bg-navy-900 border border-navy-700 rounded-xl p-4">
+            <label class="block text-sm font-semibold text-slate-300 mb-2">Angler 1</label>
+            <input type="text" x-model="newTeam.angler1" placeholder="First angler's name"
+              class="w-full bg-navy-800 border border-navy-600 rounded-lg px-3 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-amber-400 transition-colors">
+          </div>
+          <div class="bg-navy-900 border border-navy-700 rounded-xl p-4">
+            <label class="block text-sm font-semibold text-slate-300 mb-2">Angler 2</label>
+            <input type="text" x-model="newTeam.angler2" placeholder="Second angler's name"
+              class="w-full bg-navy-800 border border-navy-600 rounded-lg px-3 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-amber-400 transition-colors">
+          </div>
+        </div>
+
+        <div x-show="addTeamError" class="mt-3 text-red-400 text-sm" x-text="addTeamError"></div>
+
+        <button @click="saveNewTeam()" :disabled="addingTeam"
+          class="w-full mt-4 bg-forest-600 hover:bg-forest-500 disabled:opacity-40 text-white py-4 rounded-xl font-bold text-lg transition-colors">
+          <span x-text="addingTeam ? 'Adding...' : 'Add Team'"></span>
+        </button>
+      </div>
+    </div>
+
     <!-- Entry Modal -->
     <div x-show="showModal" x-transition @click="showModal = false"
       class="fixed inset-0 bg-black/70 flex items-end justify-center z-50">
@@ -212,8 +253,18 @@
         loading: true,
         saving: false,
         formError: null,
+        showAddTeam: false,
+        newTeam: { teamName: '', angler1: '', angler2: '' },
+        addingTeam: false,
+        addTeamError: '',
 
         async init() {
+          document.addEventListener('open-add-team', () => {
+            this.newTeam = { teamName: '', angler1: '', angler2: '' };
+            this.addTeamError = '';
+            this.showAddTeam = true;
+          });
+
           const params = new URLSearchParams(window.location.search);
           this.tournamentId = params.get('tournament');
           if (!this.tournamentId) { this.loading = false; return; }
@@ -318,6 +369,33 @@
             console.error(e);
           }
           this.saving = false;
+        },
+
+        async saveNewTeam() {
+          this.addTeamError = '';
+          const name = this.newTeam.teamName.trim();
+          const a1 = this.newTeam.angler1.trim();
+          const a2 = this.newTeam.angler2.trim();
+          if (!name) { this.addTeamError = 'Team name is required.'; return; }
+          if (!a1)   { this.addTeamError = 'Angler 1 name is required.'; return; }
+          if (!a2)   { this.addTeamError = 'Angler 2 name is required.'; return; }
+
+          this.addingTeam = true;
+          try {
+            const ref = await db.collection('teams').add({
+              teamName: name,
+              angler1: { name: a1 },
+              angler2: { name: a2 },
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            this.teams = [...this.teams, { id: ref.id, teamName: name, angler1: { name: a1 }, angler2: { name: a2 } }]
+              .sort((a, b) => a.teamName.localeCompare(b.teamName));
+            this.showAddTeam = false;
+          } catch (e) {
+            this.addTeamError = 'Error saving. Please try again.';
+            console.error(e);
+          }
+          this.addingTeam = false;
         },
 
         async removeCheckin() {
