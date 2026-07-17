@@ -265,6 +265,10 @@
               <!-- Stats -->
               <div class="flex items-center gap-4 flex-shrink-0">
                 <div class="text-right hidden sm:block">
+                  <div class="text-xs text-slate-500">Checked In</div>
+                  <div class="text-slate-300 font-semibold text-sm" x-text="entry.tournamentsCheckedIn"></div>
+                </div>
+                <div class="text-right hidden sm:block">
                   <div class="text-xs text-slate-500">Events</div>
                   <div class="text-slate-300 font-semibold text-sm" x-text="entry.tournamentsEntered"></div>
                 </div>
@@ -411,6 +415,7 @@
         teams: [],
         tournaments: [],
         weighins: [],
+        checkins: [],
         leaderboard: [],
         sortMode: 'weight',
         activeTournamentId: null,
@@ -426,14 +431,16 @@
             this.authReady = true;
           });
 
-          const [teamsSnap, tournamentsSnap, weighinsSnap] = await Promise.all([
+          const [teamsSnap, tournamentsSnap, weighinsSnap, checkinsSnap] = await Promise.all([
             db.collection('teams').get(),
             db.collection('tournaments').orderBy('date', 'asc').get(),
-            db.collection('weighins').get()
+            db.collection('weighins').get(),
+            db.collection('checkins').get()
           ]);
           this.teams = teamsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
           this.tournaments = tournamentsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
           this.weighins = weighinsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+          this.checkins = checkinsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
           const active = this.tournaments
             .filter(t => t.status === 'open')
@@ -457,7 +464,11 @@
 
         buildLeaderboard() {
           this.leaderboard = buildSeasonLeaderboard(this.teams, this.weighins, this.tournaments, this.sortMode)
-            .map(e => ({ ...e, expanded: false }));
+            .map(e => ({ ...e, expanded: false, tournamentsCheckedIn: this.getCheckedInCount(e.team.id) }));
+        },
+
+        getCheckedInCount(teamId) {
+          return this.checkins.filter(c => c.teamId === teamId && c.checkedIn).length;
         },
 
         formatDate(ts) {
