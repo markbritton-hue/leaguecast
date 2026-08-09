@@ -79,6 +79,10 @@
               class="text-slate-400 hover:text-amber-400 px-3 py-1.5 rounded-lg text-sm border border-navy-600 hover:border-amber-400 transition-colors">
               Edit
             </button>
+            <button @click="openMerge(team)"
+              class="text-slate-400 hover:text-amber-400 px-3 py-1.5 rounded-lg text-sm border border-navy-600 hover:border-amber-400 transition-colors">
+              Merge
+            </button>
             <button @click="deleteTeam(team.id)"
               class="text-slate-400 hover:text-red-400 px-3 py-1.5 rounded-lg text-sm border border-navy-600 hover:border-red-500 transition-colors">
               Delete
@@ -127,6 +131,37 @@
         </div>
       </div>
     </div>
+
+    <!-- Merge Modal -->
+    <div x-show="showMergeModal" x-transition class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+      <div class="bg-navy-800 border border-navy-600 rounded-2xl p-6 w-full max-w-md shadow-2xl" @click.stop>
+        <h2 class="text-xl font-bold text-amber-400 mb-2">Merge Team</h2>
+        <p class="text-sm text-slate-400 mb-4">
+          Merge <span class="text-white font-semibold" x-text="mergingTeam &amp;&amp; mergingTeam.teamName"></span>
+          into another team. All its weigh-ins and check-ins move to the target team, then this record is deleted.
+        </p>
+        <div>
+          <label class="block text-sm text-slate-300 mb-1">Merge into</label>
+          <select x-model="mergeTargetId" class="w-full bg-navy-900 border border-navy-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-amber-400 transition-colors">
+            <option value="">Select a team...</option>
+            <template x-for="t in teams.filter(t => mergingTeam &amp;&amp; t.id !== mergingTeam.id)" :key="t.id">
+              <option :value="t.id" x-text="t.teamName"></option>
+            </template>
+          </select>
+        </div>
+        <div x-show="mergeError" class="mt-3 text-red-400 text-sm" x-text="mergeError"></div>
+        <div class="flex gap-3 mt-6">
+          <button @click="showMergeModal = false"
+            class="flex-1 bg-navy-700 hover:bg-navy-600 text-slate-300 py-2.5 rounded-lg font-semibold transition-colors">
+            Cancel
+          </button>
+          <button @click="confirmMerge()" :disabled="merging || !mergeTargetId"
+            class="flex-1 bg-forest-600 hover:bg-forest-500 disabled:opacity-50 text-white py-2.5 rounded-lg font-semibold transition-colors">
+            <span x-text="merging ? 'Merging...' : 'Merge'"></span>
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script>
@@ -141,6 +176,11 @@
         loading: true,
         saving: false,
         error: null,
+        showMergeModal: false,
+        mergingTeam: null,
+        mergeTargetId: '',
+        merging: false,
+        mergeError: null,
 
         init() {
           db.collection('teams').onSnapshot(snap => {
@@ -184,6 +224,36 @@
             console.error(e);
           }
           this.saving = false;
+        },
+
+        openMerge(team) {
+          this.mergingTeam = team;
+          this.mergeTargetId = '';
+          this.mergeError = null;
+          this.showMergeModal = true;
+        },
+
+        async confirmMerge() {
+          if (!this.mergingTeam || !this.mergeTargetId) return;
+          if (!confirm(`Merge "${this.mergingTeam.teamName}" into the selected team? This cannot be undone.`)) return;
+          this.merging = true;
+          this.mergeError = null;
+          const loserId = this.mergingTeam.id;
+          const survivorId = this.mergeTargetId;
+          try {
+            const batch = db.batch();
+            const weighins = await db.collection('weighins').where('teamId', '==', loserId).get();
+            weighins.forEach(doc => batch.update(doc.ref, { teamId: survivorId }));
+            const checkins = await db.collection('checkins').where('teamId', '==', loserId).get();
+            checkins.forEach(doc => batch.update(doc.ref, { teamId: survivorId }));
+            batch.delete(db.collection('teams').doc(loserId));
+            await batch.commit();
+            this.showMergeModal = false;
+          } catch (e) {
+            this.mergeError = 'Error merging teams. Please try again.';
+            console.error(e);
+          }
+          this.merging = false;
         },
 
         async deleteTeam(id) {
