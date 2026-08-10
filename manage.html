@@ -93,6 +93,8 @@
     document.addEventListener('alpine:init', () => {
       const db = firebase.firestore();
 
+      const MAX_CELL_LEN = 32000;
+
       function flatten(obj, prefix = '', out = {}) {
         for (const [key, value] of Object.entries(obj || {})) {
           const path = prefix ? `${prefix}.${key}` : key;
@@ -102,6 +104,8 @@
             out[path] = value.map(v => (v && typeof v === 'object') ? JSON.stringify(v) : v).join(' | ');
           } else if (value && typeof value === 'object') {
             flatten(value, path, out);
+          } else if (typeof value === 'string' && value.length > MAX_CELL_LEN) {
+            out[path] = value.startsWith('data:') ? '[image data omitted]' : value.slice(0, MAX_CELL_LEN) + '…';
           } else {
             out[path] = value;
           }
