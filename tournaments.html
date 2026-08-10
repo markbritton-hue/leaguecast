@@ -261,6 +261,9 @@
               return { id: d.id, ...data, isTodayFlag };
             });
             this.tournaments = all.sort((a, b) => {
+              const aOpen = a.status === 'open' ? 0 : 1;
+              const bOpen = b.status === 'open' ? 0 : 1;
+              if (aOpen !== bOpen) return aOpen - bOpen;
               const aDate = a.date?.toDate?.() || new Date(a.date);
               const bDate = b.date?.toDate?.() || new Date(b.date);
               return aDate - bDate;
