@@ -77,7 +77,7 @@
         <img src="icons/tournament.webp" alt="Icon" class="w-16 h-16 object-contain">
         <div class="text-center">
           <div class="text-white font-bold text-lg group-hover:text-amber-400 transition-colors">Check-In</div>
-          <div class="text-slate-500 text-xs mt-0.5" x-text="activeTournamentId ? activeTournamentName : 'No active tournament'"></div>
+          <div class="mt-0.5 text-sm" :class="activeTournamentId ? 'text-white' : 'text-slate-500'" x-text="activeTournamentId ? activeTournamentName : 'No active tournament'"></div>
         </div>
       </a>
 
@@ -87,7 +87,7 @@
         <img src="icons/weightin.webp" alt="Icon" class="w-16 h-16 object-contain">
         <div class="text-center">
           <div class="text-white font-bold text-lg group-hover:text-forest-400 transition-colors">Weigh-In</div>
-          <div class="text-slate-500 text-xs mt-0.5" x-text="activeTournamentId ? activeTournamentName : 'No active tournament'"></div>
+          <div class="mt-0.5 text-sm" :class="activeTournamentId ? 'text-white' : 'text-slate-500'" x-text="activeTournamentId ? activeTournamentName : 'No active tournament'"></div>
         </div>
       </a>
 
