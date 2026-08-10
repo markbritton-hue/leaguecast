@@ -22,6 +22,7 @@
   </script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="./light-mode.css">
   <script src="./theme.js"></script>
@@ -70,7 +71,67 @@
       </a>
 
     </div>
+
+    <div class="mt-4" x-data="exportManager">
+      <button @click="exportData()" :disabled="exporting"
+        class="w-full bg-navy-800 border border-navy-700 hover:border-amber-500/50 hover:bg-navy-700 disabled:opacity-50 rounded-2xl p-4 flex items-center justify-center gap-3 transition-all text-slate-200 hover:text-amber-400 font-semibold">
+        <span x-text="exporting ? 'Exporting...' : '⬇ Export Data (Backup)'"></span>
+      </button>
+      <div x-show="exportError" class="mt-2 text-red-400 text-sm text-center" x-text="exportError"></div>
+    </div>
   </main>
 
+  <script>
+    document.addEventListener('alpine:init', () => {
+      const db = firebase.firestore();
+
+      Alpine.data('exportManager', () => ({
+        exporting: false,
+        exportError: null,
+
+        async exportData() {
+          this.exporting = true;
+          this.exportError = null;
+          try {
+            const backup = {};
+
+            for (const name of ['teams', 'weighins', 'checkins']) {
+              const snap = await db.collection(name).get();
+              backup[name] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            }
+
+            const tournamentsSnap = await db.collection('tournaments').get();
+            backup.tournaments = [];
+            for (const doc of tournamentsSnap.docs) {
+              const photosSnap = await doc.ref.collection('photos').get();
+              backup.tournaments.push({
+                id: doc.id,
+                ...doc.data(),
+                photos: photosSnap.docs.map(p => ({ id: p.id, ...p.data() }))
+              });
+            }
+
+            backup.exportedAt = new Date().toISOString();
+
+            const json = JSON.stringify(backup, (key, value) =>
+              value && value.toDate ? value.toDate().toISOString() : value, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `leaguecast-backup-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+          } catch (e) {
+            this.exportError = 'Error exporting data. Please try again.';
+            console.error(e);
+          }
+          this.exporting = false;
+        }
+      }));
+    });
+  </script>
 </body>
 </html>
