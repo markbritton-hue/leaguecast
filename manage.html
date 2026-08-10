@@ -51,7 +51,7 @@
       <p class="text-slate-500 text-sm mt-1">League administration</p>
     </div>
 
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-2 gap-4" x-data="activeTournamentManager" x-init="init()">
 
       <a href="tournaments.html"
         class="bg-navy-800 border border-navy-700 hover:border-amber-500/50 hover:bg-navy-700 rounded-2xl p-6 flex flex-col items-center gap-3 transition-all group">
@@ -68,6 +68,26 @@
         <div class="text-center">
           <div class="text-white font-bold text-lg group-hover:text-forest-400 transition-colors">Teams</div>
           <div class="text-slate-500 text-xs mt-0.5">Manage anglers</div>
+        </div>
+      </a>
+
+      <a :href="activeTournamentId ? `checkin.html?tournament=${activeTournamentId}` : null"
+        :class="activeTournamentId ? 'hover:border-amber-500/50 hover:bg-navy-700 cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'"
+        class="bg-navy-800 border border-navy-700 rounded-2xl p-6 flex flex-col items-center gap-3 transition-all group">
+        <img src="icons/tournament.webp" alt="Icon" class="w-16 h-16 object-contain">
+        <div class="text-center">
+          <div class="text-white font-bold text-lg group-hover:text-amber-400 transition-colors">Check-In</div>
+          <div class="text-slate-500 text-xs mt-0.5" x-text="activeTournamentId ? activeTournamentName : 'No active tournament'"></div>
+        </div>
+      </a>
+
+      <a :href="activeTournamentId ? `weigh-in.html?tournament=${activeTournamentId}` : null"
+        :class="activeTournamentId ? 'hover:border-forest-500/50 hover:bg-navy-700 cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'"
+        class="bg-navy-800 border border-navy-700 rounded-2xl p-6 flex flex-col items-center gap-3 transition-all group">
+        <img src="icons/weightin.webp" alt="Icon" class="w-16 h-16 object-contain">
+        <div class="text-center">
+          <div class="text-white font-bold text-lg group-hover:text-forest-400 transition-colors">Weigh-In</div>
+          <div class="text-slate-500 text-xs mt-0.5" x-text="activeTournamentId ? activeTournamentName : 'No active tournament'"></div>
         </div>
       </a>
 
@@ -92,6 +112,21 @@
   <script>
     document.addEventListener('alpine:init', () => {
       const db = firebase.firestore();
+
+      Alpine.data('activeTournamentManager', () => ({
+        activeTournamentId: null,
+        activeTournamentName: '',
+
+        init() {
+          db.collection('tournaments').where('status', '==', 'open').limit(1).get().then(snap => {
+            if (!snap.empty) {
+              const doc = snap.docs[0];
+              this.activeTournamentId = doc.id;
+              this.activeTournamentName = doc.data().name || '';
+            }
+          });
+        }
+      }));
 
       const MAX_CELL_LEN = 32000;
 
