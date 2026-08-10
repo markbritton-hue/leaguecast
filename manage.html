@@ -72,12 +72,19 @@
 
     </div>
 
-    <div class="mt-4" x-data="exportManager">
+    <div class="mt-4 space-y-2" x-data="exportManager">
       <button @click="exportData()" :disabled="exporting"
         class="w-full bg-navy-800 border border-navy-700 hover:border-amber-500/50 hover:bg-navy-700 disabled:opacity-50 rounded-2xl p-4 flex items-center justify-center gap-3 transition-all text-slate-200 hover:text-amber-400 font-semibold">
         <span x-text="exporting ? 'Exporting...' : '⬇ Export Data (Backup)'"></span>
       </button>
+      <button @click="exportToSheets()" :disabled="exportingCsv"
+        class="w-full bg-navy-800 border border-navy-700 hover:border-forest-500/50 hover:bg-navy-700 disabled:opacity-50 rounded-2xl p-4 flex items-center justify-center gap-3 transition-all text-slate-200 hover:text-forest-400 font-semibold">
+        <span x-text="exportingCsv ? 'Exporting...' : '📊 Export to Google Sheets (CSV)'"></span>
+      </button>
       <div x-show="exportError" class="mt-2 text-red-400 text-sm text-center" x-text="exportError"></div>
+      <p class="text-slate-500 text-xs text-center mt-2">
+        Downloads one CSV per data type. In Google Sheets: File → Import → Upload, for each file (use a new sheet tab per file for best results).
+      </p>
     </div>
   </main>
 
@@ -85,8 +92,57 @@
     document.addEventListener('alpine:init', () => {
       const db = firebase.firestore();
 
+      function flatten(obj, prefix = '', out = {}) {
+        for (const [key, value] of Object.entries(obj || {})) {
+          const path = prefix ? `${prefix}.${key}` : key;
+          if (value && typeof value.toDate === 'function') {
+            out[path] = value.toDate().toISOString();
+          } else if (Array.isArray(value)) {
+            out[path] = value.map(v => (v && typeof v === 'object') ? JSON.stringify(v) : v).join(' | ');
+          } else if (value && typeof value === 'object') {
+            flatten(value, path, out);
+          } else {
+            out[path] = value;
+          }
+        }
+        return out;
+      }
+
+      function toCSV(rows) {
+        const headers = [];
+        for (const row of rows) {
+          for (const key of Object.keys(row)) {
+            if (!headers.includes(key)) headers.push(key);
+          }
+        }
+        const escape = (val) => {
+          if (val === undefined || val === null) return '';
+          const s = String(val);
+          return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+        };
+        const lines = [headers.join(',')];
+        for (const row of rows) {
+          lines.push(headers.map(h => escape(row[h])).join(','));
+        }
+        return lines.join('\r\n');
+      }
+
+      function downloadCSV(filename, rows) {
+        if (!rows.length) return;
+        const blob = new Blob([toCSV(rows)], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+
       Alpine.data('exportManager', () => ({
         exporting: false,
+        exportingCsv: false,
         exportError: null,
 
         async exportData() {
@@ -129,6 +185,41 @@
             console.error(e);
           }
           this.exporting = false;
+        },
+
+        async exportToSheets() {
+          this.exportingCsv = true;
+          this.exportError = null;
+          try {
+            const dateStr = new Date().toISOString().slice(0, 10);
+
+            const teamsSnap = await db.collection('teams').get();
+            downloadCSV(`leaguecast-teams-${dateStr}.csv`,
+              teamsSnap.docs.map(d => flatten({ id: d.id, ...d.data() })));
+
+            const weighinsSnap = await db.collection('weighins').get();
+            downloadCSV(`leaguecast-weighins-${dateStr}.csv`,
+              weighinsSnap.docs.map(d => flatten({ id: d.id, ...d.data() })));
+
+            const checkinsSnap = await db.collection('checkins').get();
+            downloadCSV(`leaguecast-checkins-${dateStr}.csv`,
+              checkinsSnap.docs.map(d => flatten({ id: d.id, ...d.data() })));
+
+            const tournamentsSnap = await db.collection('tournaments').get();
+            const tournamentRows = [];
+            const photoRows = [];
+            for (const doc of tournamentsSnap.docs) {
+              tournamentRows.push(flatten({ id: doc.id, ...doc.data() }));
+              const photosSnap = await doc.ref.collection('photos').get();
+              photosSnap.docs.forEach(p => photoRows.push(flatten({ tournamentId: doc.id, id: p.id, ...p.data() })));
+            }
+            downloadCSV(`leaguecast-tournaments-${dateStr}.csv`, tournamentRows);
+            downloadCSV(`leaguecast-photos-${dateStr}.csv`, photoRows);
+          } catch (e) {
+            this.exportError = 'Error exporting data. Please try again.';
+            console.error(e);
+          }
+          this.exportingCsv = false;
         }
       }));
     });
