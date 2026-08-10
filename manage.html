@@ -178,20 +178,31 @@
 
             const teamsSnap = await db.collection('teams').get();
             const teamRows = teamsSnap.docs.map(d => flatten({ id: d.id, ...d.data() }));
-
-            const weighinsSnap = await db.collection('weighins').get();
-            const weighinRows = weighinsSnap.docs.map(d => flatten({ id: d.id, ...d.data() }));
-
-            const checkinsSnap = await db.collection('checkins').get();
-            const checkinRows = checkinsSnap.docs.map(d => flatten({ id: d.id, ...d.data() }));
+            const teamNameById = {};
+            teamsSnap.docs.forEach(d => { teamNameById[d.id] = d.data().teamName; });
 
             const tournamentsSnap = await db.collection('tournaments').get();
+            const tournamentNameById = {};
+            tournamentsSnap.docs.forEach(d => { tournamentNameById[d.id] = d.data().name; });
+
+            const withNames = (row) => {
+              if ('teamId' in row) row.teamName = teamNameById[row.teamId] || '';
+              if ('tournamentId' in row) row.tournamentName = tournamentNameById[row.tournamentId] || '';
+              return row;
+            };
+
+            const weighinsSnap = await db.collection('weighins').get();
+            const weighinRows = weighinsSnap.docs.map(d => withNames(flatten({ id: d.id, ...d.data() })));
+
+            const checkinsSnap = await db.collection('checkins').get();
+            const checkinRows = checkinsSnap.docs.map(d => withNames(flatten({ id: d.id, ...d.data() })));
+
             const tournamentRows = [];
             const photoRows = [];
             for (const doc of tournamentsSnap.docs) {
               tournamentRows.push(flatten({ id: doc.id, ...doc.data() }));
               const photosSnap = await doc.ref.collection('photos').get();
-              photosSnap.docs.forEach(p => photoRows.push(flatten({ tournamentId: doc.id, id: p.id, ...p.data() })));
+              photosSnap.docs.forEach(p => photoRows.push(withNames(flatten({ tournamentId: doc.id, id: p.id, ...p.data() }))));
             }
 
             const wb = XLSX.utils.book_new();
