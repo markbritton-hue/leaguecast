@@ -23,6 +23,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="./light-mode.css">
   <script src="./theme.js"></script>
@@ -79,11 +80,11 @@
       </button>
       <button @click="exportToSheets()" :disabled="exportingCsv"
         class="w-full bg-navy-800 border border-navy-700 hover:border-forest-500/50 hover:bg-navy-700 disabled:opacity-50 rounded-2xl p-4 flex items-center justify-center gap-3 transition-all text-slate-200 hover:text-forest-400 font-semibold">
-        <span x-text="exportingCsv ? 'Exporting...' : '📊 Export to Google Sheets (CSV)'"></span>
+        <span x-text="exportingCsv ? 'Exporting...' : '📊 Export to Google Sheets (.xlsx)'"></span>
       </button>
       <div x-show="exportError" class="mt-2 text-red-400 text-sm text-center" x-text="exportError"></div>
       <p class="text-slate-500 text-xs text-center mt-2">
-        Downloads one CSV per data type. In Google Sheets: File → Import → Upload, for each file (use a new sheet tab per file for best results).
+        Downloads one .xlsx file with a tab per data type (Teams, Tournaments, Weigh-ins, Check-ins, Photos). In Google Sheets: File → Import → Upload, then choose "Insert new sheet(s)".
       </p>
     </div>
   </main>
@@ -108,36 +109,14 @@
         return out;
       }
 
-      function toCSV(rows) {
+      function sheetFromRows(rows) {
         const headers = [];
         for (const row of rows) {
           for (const key of Object.keys(row)) {
             if (!headers.includes(key)) headers.push(key);
           }
         }
-        const escape = (val) => {
-          if (val === undefined || val === null) return '';
-          const s = String(val);
-          return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-        };
-        const lines = [headers.join(',')];
-        for (const row of rows) {
-          lines.push(headers.map(h => escape(row[h])).join(','));
-        }
-        return lines.join('\r\n');
-      }
-
-      function downloadCSV(filename, rows) {
-        if (!rows.length) return;
-        const blob = new Blob([toCSV(rows)], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
+        return XLSX.utils.json_to_sheet(rows, { header: headers });
       }
 
       Alpine.data('exportManager', () => ({
@@ -194,16 +173,13 @@
             const dateStr = new Date().toISOString().slice(0, 10);
 
             const teamsSnap = await db.collection('teams').get();
-            downloadCSV(`leaguecast-teams-${dateStr}.csv`,
-              teamsSnap.docs.map(d => flatten({ id: d.id, ...d.data() })));
+            const teamRows = teamsSnap.docs.map(d => flatten({ id: d.id, ...d.data() }));
 
             const weighinsSnap = await db.collection('weighins').get();
-            downloadCSV(`leaguecast-weighins-${dateStr}.csv`,
-              weighinsSnap.docs.map(d => flatten({ id: d.id, ...d.data() })));
+            const weighinRows = weighinsSnap.docs.map(d => flatten({ id: d.id, ...d.data() }));
 
             const checkinsSnap = await db.collection('checkins').get();
-            downloadCSV(`leaguecast-checkins-${dateStr}.csv`,
-              checkinsSnap.docs.map(d => flatten({ id: d.id, ...d.data() })));
+            const checkinRows = checkinsSnap.docs.map(d => flatten({ id: d.id, ...d.data() }));
 
             const tournamentsSnap = await db.collection('tournaments').get();
             const tournamentRows = [];
@@ -213,8 +189,14 @@
               const photosSnap = await doc.ref.collection('photos').get();
               photosSnap.docs.forEach(p => photoRows.push(flatten({ tournamentId: doc.id, id: p.id, ...p.data() })));
             }
-            downloadCSV(`leaguecast-tournaments-${dateStr}.csv`, tournamentRows);
-            downloadCSV(`leaguecast-photos-${dateStr}.csv`, photoRows);
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, sheetFromRows(teamRows), 'Teams');
+            XLSX.utils.book_append_sheet(wb, sheetFromRows(tournamentRows), 'Tournaments');
+            XLSX.utils.book_append_sheet(wb, sheetFromRows(weighinRows), 'Weigh-ins');
+            XLSX.utils.book_append_sheet(wb, sheetFromRows(checkinRows), 'Check-ins');
+            XLSX.utils.book_append_sheet(wb, sheetFromRows(photoRows), 'Photos');
+            XLSX.writeFile(wb, `leaguecast-export-${dateStr}.xlsx`);
           } catch (e) {
             this.exportError = 'Error exporting data. Please try again.';
             console.error(e);
