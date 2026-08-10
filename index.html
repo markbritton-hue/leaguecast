@@ -114,6 +114,7 @@
         <img src="icons/results.webp" alt="Results" class="w-16 h-16 flex-shrink-0 object-contain">
         <div class="flex-1 min-w-0 overflow-hidden">
           <div class="text-white font-bold text-base group-hover:text-forest-400 transition-colors">RESULTS</div>
+          <div class="text-slate-500 text-xs truncate" x-text="activeTournamentName ? `Live: ${activeTournamentName}` : 'No active tournament'"></div>
         </div>
         <span class="text-slate-400 text-lg flex-shrink-0">›</span>
       </a>
