@@ -97,10 +97,10 @@
                 <span class="text-xs text-slate-500" x-text="team.angler1.name + ' & ' + team.angler2.name"></span>
                 <!-- Inline stats when weighed -->
                 <span x-show="weighinMap[team.id]" class="text-sm font-bold text-forest-400"
-                  x-text="weighinMap[team.id] ? weighinMap[team.id].totalWeight.toFixed(3) + ' lbs' : ''"></span>
+                  x-text="weighinMap[team.id] ? weighinMap[team.id].totalWeight.toFixed(2) + ' lbs' : ''"></span>
                 <span x-show="weighinMap[team.id] && weighinMap[team.id].bigFish > 0"
                   class="text-xs text-amber-400"
-                  x-text="weighinMap[team.id] ? '🐟 ' + weighinMap[team.id].bigBassWeight.toFixed(3) + ' lbs' : ''"></span>
+                  x-text="weighinMap[team.id] ? '🐟 ' + weighinMap[team.id].bigBassWeight.toFixed(2) + ' lbs' : ''"></span>
                 <span x-show="weighinMap[team.id] && weighinMap[team.id].penaltyCount > 0"
                   class="text-xs text-red-400"
                   x-text="weighinMap[team.id] ? '⚠️ ' + weighinMap[team.id].penaltyCount : ''"></span>
@@ -198,14 +198,14 @@
               </div>
             </div>
             <div x-show="form.penaltyCount > 0" class="text-center mt-1 text-red-400 text-xs">
-              −<span x-text="(form.penaltyCount * 0.5).toFixed(3)"></span> lbs penalty applied
+              −<span x-text="(form.penaltyCount * 0.5).toFixed(2)"></span> lbs penalty applied
             </div>
           </div>
 
           <!-- Summary -->
           <div x-show="adjustedWeight > 0" class="bg-forest-700/30 border border-forest-600/50 rounded-xl p-3 flex items-center justify-between">
             <span class="text-slate-300 text-sm">Adjusted Total</span>
-            <span class="text-forest-400 font-bold text-lg" x-text="adjustedWeight.toFixed(3) + ' lbs'"></span>
+            <span class="text-forest-400 font-bold text-lg" x-text="adjustedWeight.toFixed(2) + ' lbs'"></span>
           </div>
 
         </div>
