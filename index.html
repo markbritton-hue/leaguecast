@@ -149,16 +149,6 @@
         <span class="text-slate-400 text-lg flex-shrink-0">›</span>
       </a>
 
-      <!-- Admin only: Weigh-In -->
-      <a x-show="authReady && isAdmin"
-        :href="activeTournamentId ? `weigh-in.html?tournament=${activeTournamentId}` : 'tournaments.html'"
-        class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-2 flex items-center gap-2 transition-all group backdrop-blur-sm">
-        <img src="icons/weightin.webp" alt="Weigh-In" class="w-16 h-16 flex-shrink-0 object-contain">
-        <div class="flex-1 min-w-0 overflow-hidden">
-          <div class="text-white font-bold text-sm sm:text-base truncate group-hover:text-amber-400 transition-colors">WEIGH-IN</div>
-        </div>
-        <span class="text-slate-300 text-lg flex-shrink-0">›</span>
-      </a>
 
       <!-- Call Tags — always visible -->
       <a href="call-tags.html"
