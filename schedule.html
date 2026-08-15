@@ -133,11 +133,13 @@
         async init() {
           db.collection('tournaments').orderBy('date', 'asc').onSnapshot(async snap => {
             const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            this.tournaments = all.sort((a, b) => {
-              const aDate = a.date?.toDate?.() || new Date(a.date);
-              const bDate = b.date?.toDate?.() || new Date(b.date);
-              return aDate - bDate;
-            });
+            const today = new Date();
+            const getDate = t => t.date?.toDate?.() || new Date(t.date);
+            const past = all.filter(t => getDate(t) < today).sort((a, b) => getDate(b) - getDate(a));
+            const upcoming = all.filter(t => getDate(t) >= today).sort((a, b) => getDate(a) - getDate(b));
+            const lastWeek = past.length ? [past[0]] : [];
+            const olderPast = past.slice(1);
+            this.tournaments = [...lastWeek, ...upcoming, ...olderPast];
             this.loading = false;
             // Load photo counts for all tournaments
             const counts = {};
