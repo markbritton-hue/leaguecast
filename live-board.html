@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeagueCast — Live Board</title>
+  <link rel="icon" href="LTD-transparent.png" type="image/png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            navy: { 950: '#060a14', 900: '#0a0f1e', 800: '#0d1530', 700: '#1a2444', 600: '#243060' },
+            forest: { 700: '#1a4731', 600: '#1e5c3a', 500: '#2d7a52', 400: '#3a9966' },
+            amber: { 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706' }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+</head>
+<body class="bg-navy-900 text-slate-100 min-h-screen">
+
+  <script src="./firebase-init.js"></script>
+
+  <main class="p-6" x-data="liveBoard" x-init="init()">
+
+    <div x-show="loading" class="flex justify-center py-12">
+      <div class="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+    <div x-show="!loading && !tournament" class="text-center py-16 text-slate-400">
+      <p class="text-lg">No active tournament.</p>
+    </div>
+
+    <div x-show="!loading && tournament">
+      <div class="mb-6 text-center">
+        <h1 class="text-2xl font-bold text-amber-400" x-text="tournament ? tournament.name : ''"></h1>
+        <p class="text-sm text-slate-400" x-text="formatDate(tournament ? tournament.date : null)"></p>
+      </div>
+
+      <div class="grid grid-flow-col grid-rows-2 gap-3 auto-cols-[minmax(220px,1fr)] overflow-x-auto pb-2">
+        <template x-for="entry in ranked" :key="entry.teamId">
+          <div class="rounded-xl p-4 border flex items-center justify-between gap-3"
+            :class="entry.rank === '1' ? 'bg-amber-500/10 border-amber-500/40' : 'bg-navy-800 border-navy-700'">
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="font-black text-lg text-slate-400 flex-shrink-0" x-text="entry.rank"></span>
+              <div class="min-w-0">
+                <div class="font-bold text-white text-sm leading-tight truncate" x-text="entry.teamName"></div>
+                <div class="text-slate-500 text-xs" x-text="entry.weighin ? '' : 'DNW'"></div>
+              </div>
+            </div>
+            <div class="font-black text-sm flex-shrink-0"
+              :class="entry.rank === '1' ? 'text-amber-400' : 'text-white'"
+              x-text="entry.weighin ? entry.weighin.totalWeight.toFixed(3) + ' lbs' : ''"></div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('alpine:init', () => {
+      const db = firebase.firestore();
+
+      function assignRanks(sorted) {
+        let prevWeight = null, prevBigFish = null, prevRank = 1;
+        return sorted.map((entry, i) => {
+          if (i === 0) {
+            prevWeight = entry.totalWeight; prevBigFish = entry.bigFish; prevRank = 1;
+            return { ...entry, rank: '1' };
+          }
+          if (entry.totalWeight === prevWeight && entry.bigFish === prevBigFish) {
+            return { ...entry, rank: 'T-' + prevRank };
+          }
+          prevRank = i + 1; prevWeight = entry.totalWeight; prevBigFish = entry.bigFish;
+          return { ...entry, rank: String(i + 1) };
+        });
+      }
+
+      Alpine.data('liveBoard', () => ({
+        tournament: null,
+        ranked: [],
+        loading: true,
+
+        async init() {
+          const openSnap = await db.collection('tournaments').where('status', '==', 'open').limit(1).get();
+          let tDoc = openSnap.docs[0];
+          if (!tDoc) {
+            const allSnap = await db.collection('tournaments').orderBy('date', 'desc').limit(1).get();
+            tDoc = allSnap.docs[0];
+          }
+          if (!tDoc) { this.loading = false; return; }
+          this.tournament = { id: tDoc.id, ...tDoc.data() };
+
+          const [teamsSnap, weighinsSnap] = await Promise.all([
+            db.collection('teams').get(),
+            db.collection('weighins').where('tournamentId', '==', this.tournament.id).get()
+          ]);
+          const teams = teamsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+          const weighins = weighinsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+          this.buildRanked(teams, weighins);
+          this.loading = false;
+        },
+
+        buildRanked(teams, weighins) {
+          const weighinByTeam = {};
+          weighins.forEach(w => { weighinByTeam[w.teamId] = w; });
+
+          const withWeighin = teams.filter(t => weighinByTeam[t.id]).map(t => ({
+            teamId: t.id, teamName: t.teamName,
+            weighin: weighinByTeam[t.id],
+            totalWeight: weighinByTeam[t.id].totalWeight || 0,
+            bigFish: weighinByTeam[t.id].bigFish || weighinByTeam[t.id].bigBassWeight || 0
+          })).sort((a, b) => b.totalWeight - a.totalWeight || b.bigFish - a.bigFish);
+
+          const ranked = assignRanks(withWeighin);
+
+          const dnw = teams.filter(t => !weighinByTeam[t.id]).map(t => ({
+            teamId: t.id, teamName: t.teamName, weighin: null, rank: 'DNW'
+          }));
+          this.ranked = [...ranked, ...dnw];
+        },
+
+        formatDate(ts) {
+          if (!ts) return '';
+          const d = ts.toDate ? ts.toDate() : new Date(ts);
+          return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        }
+      }));
+    });
+  </script>
+</body>
+</html>

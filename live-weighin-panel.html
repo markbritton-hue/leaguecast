@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeagueCast — Live Weigh-In Panel</title>
+  <link rel="icon" href="LTD-transparent.png" type="image/png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            navy: { 950: '#060a14', 900: '#0a0f1e', 800: '#0d1530', 700: '#1a2444', 600: '#243060' },
+            forest: { 700: '#1a4731', 600: '#1e5c3a', 500: '#2d7a52', 400: '#3a9966' },
+            amber: { 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706' }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <style>
+    html, body { background: transparent !important; }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen bg-transparent">
+
+  <script src="./firebase-init.js"></script>
+
+  <main class="p-3 w-80" x-data="liveWeighinPanel" x-init="init()">
+
+    <div x-show="tournament" class="bg-navy-900/85 backdrop-blur border border-navy-700 rounded-xl p-3 shadow-2xl">
+      <div class="text-amber-400 font-bold text-sm mb-2 truncate" x-text="tournament ? tournament.name : ''"></div>
+
+      <div class="space-y-1.5 max-h-96 overflow-y-auto">
+        <template x-for="entry in ranked" :key="entry.teamId">
+          <div class="rounded-lg px-2.5 py-1.5 border flex items-center justify-between gap-2 transition-colors"
+            :class="entry.rank === '1' ? 'bg-amber-500/10 border-amber-500/40' : 'bg-navy-800/70 border-navy-700'">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="font-black text-xs text-slate-400 flex-shrink-0 w-4" x-text="entry.rank"></span>
+              <span class="font-semibold text-white text-xs truncate" x-text="entry.teamName"></span>
+            </div>
+            <span class="font-black text-xs flex-shrink-0"
+              :class="entry.rank === '1' ? 'text-amber-400' : 'text-white'"
+              x-text="entry.weighin.totalWeight.toFixed(3) + ' lbs'"></span>
+          </div>
+        </template>
+      </div>
+
+      <div x-show="ranked.length === 0" class="text-slate-500 text-xs text-center py-3">
+        No weigh-ins yet
+      </div>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('alpine:init', () => {
+      const db = firebase.firestore();
+
+      function assignRanks(sorted) {
+        let prevWeight = null, prevBigFish = null, prevRank = 1;
+        return sorted.map((entry, i) => {
+          if (i === 0) {
+            prevWeight = entry.totalWeight; prevBigFish = entry.bigFish; prevRank = 1;
+            return { ...entry, rank: '1' };
+          }
+          if (entry.totalWeight === prevWeight && entry.bigFish === prevBigFish) {
+            return { ...entry, rank: 'T-' + prevRank };
+          }
+          prevRank = i + 1; prevWeight = entry.totalWeight; prevBigFish = entry.bigFish;
+          return { ...entry, rank: String(i + 1) };
+        });
+      }
+
+      Alpine.data('liveWeighinPanel', () => ({
+        tournament: null,
+        ranked: [],
+        teams: [],
+
+        async init() {
+          const openSnap = await db.collection('tournaments').where('status', '==', 'open').limit(1).get();
+          let tDoc = openSnap.docs[0];
+          if (!tDoc) {
+            const allSnap = await db.collection('tournaments').orderBy('date', 'desc').limit(1).get();
+            tDoc = allSnap.docs[0];
+          }
+          if (!tDoc) return;
+          this.tournament = { id: tDoc.id, ...tDoc.data() };
+
+          const teamsSnap = await db.collection('teams').get();
+          this.teams = teamsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+          db.collection('weighins').where('tournamentId', '==', this.tournament.id)
+            .onSnapshot(snap => {
+              const weighins = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+              this.buildRanked(weighins);
+            });
+        },
+
+        buildRanked(weighins) {
+          const weighinByTeam = {};
+          weighins.forEach(w => { weighinByTeam[w.teamId] = w; });
+
+          const withWeighin = this.teams.filter(t => weighinByTeam[t.id]).map(t => ({
+            teamId: t.id, teamName: t.teamName,
+            weighin: weighinByTeam[t.id],
+            totalWeight: weighinByTeam[t.id].totalWeight || 0,
+            bigFish: weighinByTeam[t.id].bigFish || weighinByTeam[t.id].bigBassWeight || 0
+          })).sort((a, b) => b.totalWeight - a.totalWeight || b.bigFish - a.bigFish);
+
+          this.ranked = assignRanks(withWeighin);
+        }
+      }));
+    });
+  </script>
+</body>
+</html>
