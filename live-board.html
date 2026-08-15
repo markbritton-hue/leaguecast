@@ -55,9 +55,13 @@
                 <div class="text-slate-500 text-xs" x-text="entry.weighin ? '' : 'DNW'"></div>
               </div>
             </div>
-            <div class="font-black text-sm flex-shrink-0"
-              :class="entry.rank === '1' ? 'text-amber-400' : 'text-white'"
-              x-text="entry.weighin ? entry.weighin.totalWeight.toFixed(3) + ' lbs' : ''"></div>
+            <div class="text-right flex-shrink-0">
+              <div class="font-black text-sm"
+                :class="entry.rank === '1' ? 'text-amber-400' : 'text-white'"
+                x-text="entry.weighin ? entry.weighin.totalWeight.toFixed(3) + ' lbs' : ''"></div>
+              <div x-show="entry.bigFish > 0" class="text-slate-400 text-xs"
+                x-text="'🐟 ' + entry.bigFish.toFixed(3) + ' lbs'"></div>
+            </div>
           </div>
         </template>
       </div>

@@ -44,9 +44,13 @@
               <span class="font-black text-xs text-slate-400 flex-shrink-0 w-4" x-text="entry.rank"></span>
               <span class="font-semibold text-white text-xs truncate" x-text="entry.teamName"></span>
             </div>
-            <span class="font-black text-xs flex-shrink-0"
-              :class="entry.rank === '1' ? 'text-amber-400' : 'text-white'"
-              x-text="entry.weighin.totalWeight.toFixed(3) + ' lbs'"></span>
+            <div class="text-right flex-shrink-0">
+              <div class="font-black text-xs"
+                :class="entry.rank === '1' ? 'text-amber-400' : 'text-white'"
+                x-text="entry.weighin.totalWeight.toFixed(3) + ' lbs'"></div>
+              <div x-show="entry.bigFish > 0" class="text-slate-500 text-[10px]"
+                x-text="'🐟 ' + entry.bigFish.toFixed(3) + ' lbs'"></div>
+            </div>
           </div>
         </template>
       </div>
