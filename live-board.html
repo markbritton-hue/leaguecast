@@ -44,7 +44,7 @@
         <p class="text-sm text-slate-400" x-text="formatDate(tournament ? tournament.date : null)"></p>
       </div>
 
-      <div class="grid grid-flow-col grid-rows-2 gap-3 auto-cols-[minmax(220px,1fr)] overflow-x-auto pb-2">
+      <div class="grid grid-cols-2 gap-3">
         <template x-for="entry in ranked" :key="entry.teamId">
           <div class="rounded-xl p-4 border flex items-center justify-between gap-3"
             :class="entry.rank === '1' ? 'bg-amber-500/10 border-amber-500/40' : 'bg-navy-800 border-navy-700'">

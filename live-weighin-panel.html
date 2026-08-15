@@ -36,7 +36,7 @@
     <div x-show="tournament" class="bg-navy-900/85 backdrop-blur border border-navy-700 rounded-xl p-3 shadow-2xl">
       <div class="text-amber-400 font-bold text-sm mb-2 truncate" x-text="tournament ? tournament.name : ''"></div>
 
-      <div class="space-y-1.5 max-h-96 overflow-y-auto">
+      <div class="space-y-1.5">
         <template x-for="entry in ranked" :key="entry.teamId">
           <div class="rounded-lg px-2.5 py-1.5 border flex items-center justify-between gap-2 transition-colors"
             :class="entry.rank === '1' ? 'bg-amber-500/10 border-amber-500/40' : 'bg-navy-800/70 border-navy-700'">
