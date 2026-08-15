@@ -34,33 +34,32 @@
       <div class="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
     </div>
 
-    <div x-show="!loading && !tournament" class="text-center py-16 text-slate-400">
-      <p class="text-lg">No active tournament.</p>
+    <div x-show="!loading && leaderboard.length === 0" class="text-center py-16 text-slate-400">
+      <p class="text-lg">No standings yet.</p>
     </div>
 
-    <div x-show="!loading && tournament">
+    <div x-show="!loading && leaderboard.length > 0">
       <div class="mb-6 text-center">
-        <h1 class="text-2xl font-bold text-amber-400" x-text="tournament ? tournament.name : ''"></h1>
-        <p class="text-sm text-slate-400" x-text="formatDate(tournament ? tournament.date : null)"></p>
+        <h1 class="text-2xl font-bold text-amber-400">Season Standings</h1>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
-        <template x-for="entry in ranked" :key="entry.teamId">
+        <template x-for="entry in leaderboard" :key="entry.team.id">
           <div class="rounded-xl p-4 border flex items-center justify-between gap-3"
             :class="entry.rank === '1' ? 'bg-amber-500/10 border-amber-500/40' : 'bg-navy-800 border-navy-700'">
             <div class="flex items-center gap-3 min-w-0">
               <span class="font-black text-lg text-slate-400 flex-shrink-0" x-text="entry.rank"></span>
               <div class="min-w-0">
-                <div class="font-bold text-white text-sm leading-tight truncate" x-text="entry.teamName"></div>
-                <div class="text-slate-500 text-xs" x-text="entry.weighin ? '' : 'DNW'"></div>
+                <div class="font-bold text-white text-sm leading-tight truncate" x-text="entry.team.teamName"></div>
+                <div class="text-slate-500 text-xs truncate" x-text="entry.team.angler1.name + ' & ' + entry.team.angler2.name"></div>
               </div>
             </div>
             <div class="text-right flex-shrink-0">
               <div class="font-black text-sm"
                 :class="entry.rank === '1' ? 'text-amber-400' : 'text-white'"
-                x-text="entry.weighin ? entry.weighin.totalWeight.toFixed(3) + ' lbs' : ''"></div>
-              <div x-show="entry.bigFish > 0" class="text-slate-400 text-xs"
-                x-text="'🐟 ' + entry.bigFish.toFixed(3) + ' lbs'"></div>
+                x-text="entry.totalWeight.toFixed(3) + ' lbs'"></div>
+              <div x-show="entry.biggestBass > 0" class="text-slate-400 text-xs"
+                x-text="'🐟 ' + entry.biggestBass.toFixed(3) + ' lbs'"></div>
             </div>
           </div>
         </template>
@@ -72,69 +71,82 @@
     document.addEventListener('alpine:init', () => {
       const db = firebase.firestore();
 
-      function assignRanks(sorted) {
-        let prevWeight = null, prevBigFish = null, prevRank = 1;
-        return sorted.map((entry, i) => {
-          if (i === 0) {
-            prevWeight = entry.totalWeight; prevBigFish = entry.bigFish; prevRank = 1;
-            return { ...entry, rank: '1' };
+      function getBigFish(w) {
+        return w.bigFish || w.bigBassWeight || 0;
+      }
+
+      function buildSeasonLeaderboard(teams, weighins, tournaments) {
+        const byTournament = {};
+        weighins.forEach(w => {
+          if (!byTournament[w.tournamentId]) byTournament[w.tournamentId] = [];
+          byTournament[w.tournamentId].push(w);
+        });
+
+        const teamPoints = {};
+        teams.forEach(t => {
+          teamPoints[t.id] = { team: t, totalWeight: 0, totalPoints: 0, wins: 0, biggestBass: 0, tournamentsEntered: 0 };
+        });
+
+        tournaments.forEach(tournament => {
+          const tWeighins = (byTournament[tournament.id] || [])
+            .sort((a, b) => b.totalWeight - a.totalWeight || getBigFish(b) - getBigFish(a));
+          const n = tWeighins.length;
+
+          tWeighins.forEach((w, idx) => {
+            if (!teamPoints[w.teamId]) return;
+            teamPoints[w.teamId].totalWeight += w.totalWeight || 0;
+            teamPoints[w.teamId].tournamentsEntered += 1;
+
+            const bass = getBigFish(w);
+            if (bass > teamPoints[w.teamId].biggestBass) teamPoints[w.teamId].biggestBass = bass;
+
+            const firstTiedIdx = tWeighins.findIndex(x =>
+              x.totalWeight === w.totalWeight && getBigFish(x) === getBigFish(w)
+            );
+            teamPoints[w.teamId].totalPoints += n - firstTiedIdx;
+            if (idx === 0) teamPoints[w.teamId].wins += 1;
+          });
+        });
+
+        const list = Object.values(teamPoints)
+          .filter(e => e.tournamentsEntered > 0)
+          .sort((a, b) => {
+            if (b.totalWeight !== a.totalWeight) return b.totalWeight - a.totalWeight;
+            return b.biggestBass - a.biggestBass;
+          });
+
+        let prevVal = null, prevBass = null, prevRankLabel = '1';
+        return list.map((entry, i) => {
+          let rankLabel;
+          if (i === 0) { rankLabel = '1'; }
+          else if (entry.totalWeight === prevVal && entry.biggestBass === prevBass) {
+            rankLabel = 'T-' + prevRankLabel.replace('T-', '');
+          } else {
+            rankLabel = String(i + 1);
+            prevRankLabel = rankLabel;
           }
-          if (entry.totalWeight === prevWeight && entry.bigFish === prevBigFish) {
-            return { ...entry, rank: 'T-' + prevRank };
-          }
-          prevRank = i + 1; prevWeight = entry.totalWeight; prevBigFish = entry.bigFish;
-          return { ...entry, rank: String(i + 1) };
+          prevVal = entry.totalWeight;
+          prevBass = entry.biggestBass;
+          return { ...entry, rank: rankLabel };
         });
       }
 
       Alpine.data('liveBoard', () => ({
-        tournament: null,
-        ranked: [],
+        leaderboard: [],
         loading: true,
 
         async init() {
-          const openSnap = await db.collection('tournaments').where('status', '==', 'open').limit(1).get();
-          let tDoc = openSnap.docs[0];
-          if (!tDoc) {
-            const allSnap = await db.collection('tournaments').orderBy('date', 'desc').limit(1).get();
-            tDoc = allSnap.docs[0];
-          }
-          if (!tDoc) { this.loading = false; return; }
-          this.tournament = { id: tDoc.id, ...tDoc.data() };
-
-          const [teamsSnap, weighinsSnap] = await Promise.all([
+          const [teamsSnap, tournamentsSnap, weighinsSnap] = await Promise.all([
             db.collection('teams').get(),
-            db.collection('weighins').where('tournamentId', '==', this.tournament.id).get()
+            db.collection('tournaments').get(),
+            db.collection('weighins').get()
           ]);
           const teams = teamsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+          const tournaments = tournamentsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
           const weighins = weighinsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-          this.buildRanked(teams, weighins);
+
+          this.leaderboard = buildSeasonLeaderboard(teams, weighins, tournaments);
           this.loading = false;
-        },
-
-        buildRanked(teams, weighins) {
-          const weighinByTeam = {};
-          weighins.forEach(w => { weighinByTeam[w.teamId] = w; });
-
-          const withWeighin = teams.filter(t => weighinByTeam[t.id]).map(t => ({
-            teamId: t.id, teamName: t.teamName,
-            weighin: weighinByTeam[t.id],
-            totalWeight: weighinByTeam[t.id].totalWeight || 0,
-            bigFish: weighinByTeam[t.id].bigFish || weighinByTeam[t.id].bigBassWeight || 0
-          })).sort((a, b) => b.totalWeight - a.totalWeight || b.bigFish - a.bigFish);
-
-          const ranked = assignRanks(withWeighin);
-
-          const dnw = teams.filter(t => !weighinByTeam[t.id]).map(t => ({
-            teamId: t.id, teamName: t.teamName, weighin: null, rank: 'DNW'
-          }));
-          this.ranked = [...ranked, ...dnw];
-        },
-
-        formatDate(ts) {
-          if (!ts) return '';
-          const d = ts.toDate ? ts.toDate() : new Date(ts);
-          return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
         }
       }));
     });
