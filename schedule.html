@@ -57,6 +57,7 @@
       <template x-for="t in tournaments" :key="t.id">
         <div>
           <div x-show="t.isPrevious" class="text-xs font-bold text-navy-400 uppercase tracking-wide pt-2 pb-1">Previous</div>
+          <hr x-show="t.isFirstUpcoming" class="border-navy-700 my-4">
           <div x-show="t.isFirstUpcoming" class="text-xs font-bold text-navy-400 uppercase tracking-wide pt-2 pb-1">Upcoming</div>
           <div class="border rounded-xl p-4 transition-colors"
             :id="isToday(t) ? 'today-tournament' : ''"

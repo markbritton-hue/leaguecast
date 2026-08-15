@@ -73,6 +73,7 @@
       <template x-for="t in tournaments" :key="t.id">
         <div>
           <div x-show="t.isPrevious" class="text-xs font-bold text-navy-400 uppercase tracking-wide pt-2 pb-1">Previous</div>
+          <hr x-show="t.isFirstUpcoming" class="border-navy-700 my-4">
           <div x-show="t.isFirstUpcoming" class="text-xs font-bold text-navy-400 uppercase tracking-wide pt-2 pb-1">Upcoming</div>
           <div :id="`tournament-${t.id}`" class="border rounded-xl p-4 transition-colors"
             :class="{ 'bg-amber-500/40 border-amber-500/80': t.isTodayFlag, 'bg-forest-700/20 border-forest-500/50': !t.isTodayFlag && t.status === 'open', 'bg-navy-800 border-navy-700': !t.isTodayFlag && t.status !== 'open' }">
