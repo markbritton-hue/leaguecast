@@ -55,16 +55,22 @@
 
     <div x-show="!loading" class="space-y-3">
       <template x-for="t in tournaments" :key="t.id">
-        <div class="border rounded-xl p-4 transition-colors"
-          :id="isToday(t) ? 'today-tournament' : ''"
-          :class="isToday(t)
-            ? 'bg-amber-500/15 border-amber-400/60 ring-1 ring-amber-400/40 shadow-lg shadow-amber-500/10'
-            : t.status === 'open' ? 'bg-forest-700/20 border-forest-500/50' : 'bg-navy-800 border-navy-700'">
+        <div>
+          <div x-show="t.isFirstUpcoming" class="text-xs font-bold text-navy-400 uppercase tracking-wide pt-2 pb-1">Upcoming</div>
+          <div class="border rounded-xl p-4 transition-colors"
+            :id="isToday(t) ? 'today-tournament' : ''"
+            :class="isToday(t)
+              ? 'bg-amber-500/15 border-amber-400/60 ring-1 ring-amber-400/40 shadow-lg shadow-amber-500/10'
+              : t.status === 'open' ? 'bg-forest-700/20 border-forest-500/50' : 'bg-navy-800 border-navy-700'">
 
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="font-bold text-white text-lg" x-text="t.name"></span>
+                <span x-show="t.isPrevious"
+                  class="flex items-center gap-1 text-xs bg-navy-700 text-navy-300 font-bold px-2.5 py-1 rounded-full">
+                  Previous
+                </span>
                 <span x-show="isToday(t)"
                   class="flex items-center gap-1 text-xs bg-amber-500 text-amber-950 font-black px-2.5 py-1 rounded-full tracking-wide">
                   ⭐ TODAY
@@ -116,6 +122,7 @@
               🚤 Boat Order
             </a>
           </div>
+          </div>
         </div>
       </template>
     </div>
@@ -137,8 +144,9 @@
             const getDate = t => t.date?.toDate?.() || new Date(t.date);
             const past = all.filter(t => getDate(t) < today).sort((a, b) => getDate(b) - getDate(a));
             const upcoming = all.filter(t => getDate(t) >= today).sort((a, b) => getDate(a) - getDate(b));
-            const lastWeek = past.length ? [past[0]] : [];
+            const lastWeek = past.length ? [{ ...past[0], isPrevious: true }] : [];
             const olderPast = past.slice(1);
+            if (upcoming.length) upcoming[0] = { ...upcoming[0], isFirstUpcoming: true };
             this.tournaments = [...lastWeek, ...upcoming, ...olderPast];
             this.loading = false;
             // Load photo counts for all tournaments
