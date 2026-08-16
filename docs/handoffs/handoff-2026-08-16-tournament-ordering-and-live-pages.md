@@ -11,10 +11,12 @@
    - Not linked from any nav/card, no login required.
    - Shows **season-wide overall standings** (not single-tournament results) — reuses the same `buildSeasonLeaderboard` logic as `index.html`'s Season Standings section (total weight, biggest-bass tiebreaker, tie ranks like `T-2`).
    - Visual style matches home page: podium (trophy images) for top 3, then a 2-column grid of team cards with rank-icon treatment (gold/silver/bronze trophy images, numeric rank otherwise). Shows total weight and big bass weight per team.
+   - Auto-reloads every 30s (`setInterval(() => location.reload(), 30000)`).
 
 3. **New page: `live-weighin-panel.html`**
-   - Not linked, no login, `background: transparent` — intended as an overlay/browser-source panel.
-   - Live-updates via Firestore `onSnapshot` on `weighins` filtered to the currently open tournament.
+   - Not linked, no login, `background: transparent` — intended as an overlay/browser-source panel (e.g. OBS).
+   - Live-updates via Firestore `onSnapshot` on `weighins` filtered to the currently open tournament — no reload needed for new weigh-ins.
+   - Also auto-reloads every 30s, mainly to re-resolve which tournament is currently "open" in case that changes mid-session.
    - Shows rank, team name, total weight, big bass weight. No scroll cap — grows to fit all entries.
 
 Both new pages resolve "current tournament" the same way: query `tournaments` where `status == 'open'` limit 1, fall back to most recent by date if none open.
