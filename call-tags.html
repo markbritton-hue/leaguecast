@@ -250,20 +250,51 @@
       setTimeout(() => msg.textContent = '', 3000);
     }
 
-    function loadSaved() {
+    function applyTags(data) {
+      activeTags = [];
+      document.getElementById('fish-grid').innerHTML = '';
+      data.forEach(t => {
+        if (!t.color) return;
+        activeTags.push({ color: t.color });
+        renderCard(t.color);
+        if (t.val !== undefined) document.getElementById('wt-' + ck(t.color)).value = t.val;
+      });
+      renderSwatches();
+      onWeightChangeLocal();
+    }
+
+    // Same as onWeightChange but skips re-pushing to Firestore (used when loading from Firestore)
+    function onWeightChangeLocal() {
+      let grandLbs = 0;
+      activeTags.forEach(t => {
+        const w = getWeight(t.color);
+        const el = document.getElementById('fish-total-' + ck(t.color));
+        if (el) el.innerHTML = w.val > 0 ? '<strong style="color:#e2e8f0;font-size:0.95rem;">' + w.val.toFixed(3) + ' lbs</strong>' : '';
+        grandLbs += w.val;
+      });
+      document.getElementById('grand-total').textContent = grandLbs.toFixed(3) + ' lbs';
+    }
+
+    function loadSavedLocal() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
       try {
-        const data = JSON.parse(raw);
-        data.forEach(t => {
-          if (!t.color) return;
-          activeTags.push({ color: t.color });
-          renderCard(t.color);
-          if (t.val !== undefined) document.getElementById('wt-' + ck(t.color)).value = t.val;
-        });
-        renderSwatches();
-        onWeightChange();
+        applyTags(JSON.parse(raw));
       } catch(e) { console.warn('loadSaved failed', e); }
+    }
+
+    function loadSaved() {
+      liveDocRef.get().then(doc => {
+        const data = doc.data();
+        if (data && data.tags && data.tags.length) {
+          applyTags(data.tags);
+        } else {
+          loadSavedLocal();
+        }
+      }).catch(e => {
+        console.warn('loadSaved from Firestore failed, falling back to local', e);
+        loadSavedLocal();
+      });
     }
 
     function clearAll() {
