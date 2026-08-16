@@ -130,8 +130,6 @@
       const data = doc.data();
       render(data && data.tags ? data.tags : []);
     }, err => console.warn('overlay snapshot error', err));
-
-    setInterval(() => location.reload(), 30000);
   </script>
 </body>
 </html>
