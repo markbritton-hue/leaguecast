@@ -87,7 +87,7 @@
         row.className = 'tag-row';
         row.innerHTML = `
           <div class="dot" style="background:${t.color};"></div>
-          <div class="val">${(t.val || 0).toFixed(3)} lbs</div>`;
+          <div class="val">${(t.val || 0).toFixed(2)} lbs</div>`;
         wrap.appendChild(row);
       });
       if (sorted.length) {
@@ -95,7 +95,7 @@
         totalRow.className = 'total-row';
         totalRow.innerHTML = `
           <span class="total-label">Total</span>
-          <span class="total-val">${total.toFixed(3)} lbs</span>`;
+          <span class="total-val">${total.toFixed(2)} lbs</span>`;
         wrap.appendChild(totalRow);
       }
     }
