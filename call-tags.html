@@ -23,6 +23,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <link rel="stylesheet" href="./light-mode.css">
   <script src="./theme.js"></script>
   <style>
@@ -132,11 +133,13 @@
     const db = firebase.firestore();
     const liveDocRef = db.collection('calltags').doc('live');
     let pushTimer = null;
+    let isAdmin = false;
 
     let activeTags = [];
     let pickerOpen = false;
 
     function pushLive() {
+      if (!isAdmin) return;
       clearTimeout(pushTimer);
       pushTimer = setTimeout(() => {
         const data = activeTags.map(t => ({ color: t.color, val: getWeight(t.color).val }));
@@ -284,6 +287,10 @@
     }
 
     function loadSaved() {
+      if (!isAdmin) {
+        loadSavedLocal();
+        return;
+      }
       liveDocRef.get().then(doc => {
         const data = doc.data();
         if (data && data.tags && data.tags.length) {
@@ -304,7 +311,9 @@
       onWeightChange();
       renderSwatches();
       localStorage.removeItem(STORAGE_KEY);
-      liveDocRef.set({ tags: [], updatedAt: Date.now() }).catch(e => console.warn('pushLive failed', e));
+      if (isAdmin) {
+        liveDocRef.set({ tags: [], updatedAt: Date.now() }).catch(e => console.warn('pushLive failed', e));
+      }
     }
 
     function toggleCallOut() {
@@ -343,7 +352,10 @@
     }
 
     renderSwatches();
-    loadSaved();
+    firebase.auth().onAuthStateChanged(user => {
+      isAdmin = !!user;
+      loadSaved();
+    });
   </script>
 
 </body>
