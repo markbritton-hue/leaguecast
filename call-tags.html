@@ -21,6 +21,8 @@
     }
   </script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <link rel="stylesheet" href="./light-mode.css">
   <script src="./theme.js"></script>
   <style>
@@ -123,12 +125,24 @@
     </div>
   </div>
 
+  <script src="./firebase-init.js"></script>
   <script>
     const ALL_COLORS = ['#3b82f6','#10b981','#a78bfa','#facc15','#ef4444','#06b6d4','#f97316','#ec4899'];
     const STORAGE_KEY = 'leaguecast_calltags';
+    const db = firebase.firestore();
+    const liveDocRef = db.collection('calltags').doc('live');
+    let pushTimer = null;
 
     let activeTags = [];
     let pickerOpen = false;
+
+    function pushLive() {
+      clearTimeout(pushTimer);
+      pushTimer = setTimeout(() => {
+        const data = activeTags.map(t => ({ color: t.color, val: getWeight(t.color).val }));
+        liveDocRef.set({ tags: data, updatedAt: Date.now() }).catch(e => console.warn('pushLive failed', e));
+      }, 400);
+    }
 
     function ck(color) { return color.replace('#', ''); }
 
@@ -225,6 +239,7 @@
         grandLbs += w.val;
       });
       document.getElementById('grand-total').textContent = grandLbs.toFixed(3) + ' lbs';
+      pushLive();
     }
 
     function saveData() {
@@ -258,6 +273,7 @@
       onWeightChange();
       renderSwatches();
       localStorage.removeItem(STORAGE_KEY);
+      liveDocRef.set({ tags: [], updatedAt: Date.now() }).catch(e => console.warn('pushLive failed', e));
     }
 
     function toggleCallOut() {

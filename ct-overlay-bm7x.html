@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Call Tag Overlay</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+    #wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 1rem;
+      width: fit-content;
+    }
+    .tag-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(6, 10, 20, 0.55);
+      border-radius: 10px;
+      padding: 0.5rem 1rem;
+      backdrop-filter: blur(4px);
+    }
+    .dot {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    .val {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+      min-width: 5.5rem;
+    }
+    .total-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      background: rgba(245, 158, 11, 0.85);
+      border-radius: 10px;
+      padding: 0.5rem 1rem;
+      margin-top: 0.25rem;
+    }
+    .total-label {
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #0a0f1e;
+    }
+    .total-val {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #0a0f1e;
+    }
+  </style>
+</head>
+<body>
+  <div id="wrap"></div>
+
+  <script src="./firebase-init.js"></script>
+  <script>
+    const db = firebase.firestore();
+    const liveDocRef = db.collection('calltags').doc('live');
+
+    function render(tags) {
+      const wrap = document.getElementById('wrap');
+      wrap.innerHTML = '';
+      const sorted = [...tags].sort((a, b) => (b.val || 0) - (a.val || 0));
+      let total = 0;
+      sorted.forEach(t => {
+        total += t.val || 0;
+        const row = document.createElement('div');
+        row.className = 'tag-row';
+        row.innerHTML = `
+          <div class="dot" style="background:${t.color};"></div>
+          <div class="val">${(t.val || 0).toFixed(3)} lbs</div>`;
+        wrap.appendChild(row);
+      });
+      if (sorted.length) {
+        const totalRow = document.createElement('div');
+        totalRow.className = 'total-row';
+        totalRow.innerHTML = `
+          <span class="total-label">Total</span>
+          <span class="total-val">${total.toFixed(3)} lbs</span>`;
+        wrap.appendChild(totalRow);
+      }
+    }
+
+    liveDocRef.onSnapshot(doc => {
+      const data = doc.data();
+      render(data && data.tags ? data.tags : []);
+    }, err => console.warn('overlay snapshot error', err));
+  </script>
+</body>
+</html>
