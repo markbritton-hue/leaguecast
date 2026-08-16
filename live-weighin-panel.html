@@ -103,6 +103,8 @@
               const weighins = snap.docs.map(d => ({ id: d.id, ...d.data() }));
               this.buildRanked(weighins);
             });
+
+          setInterval(() => location.reload(), 30000);
         },
 
         buildRanked(weighins) {
