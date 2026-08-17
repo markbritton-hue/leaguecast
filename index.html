@@ -288,6 +288,9 @@
                     <div class="min-w-0">
                       <div class="text-sm text-slate-300 font-semibold truncate" x-text="t.name"></div>
                       <div class="text-xs text-slate-600" x-text="formatDate(t.date)"></div>
+                      <div class="text-xs text-amber-400 font-bold mt-0.5"
+                        x-show="getTournamentWeighin(entry.team.id, t.id)"
+                        x-text="getTournamentPlace(entry.team.id, t.id)"></div>
                     </div>
                     <div class="flex items-center gap-4 flex-shrink-0 ml-3">
                       <template x-if="getTournamentWeighin(entry.team.id, t.id)">
@@ -493,6 +496,25 @@
           if (!w || !w.bigFish && !w.bigBassWeight && !w.bigBassLbs) return '';
           const bass = w.bigFish || w.bigBassWeight || (w.bigBassLbs ? w.bigBassLbs + (w.bigBassOz || 0) / 16 : 0);
           return `🐟 ${bass.toFixed(3)} lbs`;
+        },
+
+        getTournamentPlace(teamId, tournamentId) {
+          const tWeighins = this.weighins
+            .filter(w => w.tournamentId === tournamentId)
+            .sort((a, b) => (b.totalWeight || 0) - (a.totalWeight || 0) || getBigFish(b) - getBigFish(a));
+          const w = tWeighins.find(x => x.teamId === teamId);
+          if (!w) return '';
+          const firstTiedIdx = tWeighins.findIndex(x =>
+            (x.totalWeight || 0) === (w.totalWeight || 0) && getBigFish(x) === getBigFish(w)
+          );
+          const tied = tWeighins.filter(x =>
+            (x.totalWeight || 0) === (w.totalWeight || 0) && getBigFish(x) === getBigFish(w)
+          ).length > 1;
+          const place = firstTiedIdx + 1;
+          const suffix = place % 10 === 1 && place % 100 !== 11 ? 'st'
+            : place % 10 === 2 && place % 100 !== 12 ? 'nd'
+            : place % 10 === 3 && place % 100 !== 13 ? 'rd' : 'th';
+          return (tied ? 'T-' : '') + place + suffix + ' Place';
         },
 
         get seasonSummary() {
