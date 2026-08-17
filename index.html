@@ -108,9 +108,10 @@
         <span class="text-slate-400 text-lg flex-shrink-0">›</span>
       </a>
 
-      <!-- Results — always visible -->
-      <a :href="activeTournamentId ? `results.html?id=${activeTournamentId}` : 'results.html'"
-        class="bg-navy-800/80 border border-navy-700/50 hover:border-navy-600 hover:bg-navy-700/50 rounded-lg p-2 flex items-center gap-2 transition-all group backdrop-blur-sm">
+      <!-- Results — always visible, greyed out when no active tournament -->
+      <a :href="activeTournamentId ? `results.html?id=${activeTournamentId}` : '#'"
+        :class="activeTournamentId ? 'hover:border-navy-600 hover:bg-navy-700/50 group' : 'opacity-50 cursor-not-allowed pointer-events-none'"
+        class="bg-navy-800/80 border border-navy-700/50 rounded-lg p-2 flex items-center gap-2 transition-all backdrop-blur-sm">
         <img src="icons/results.webp" alt="Results" class="w-16 h-16 flex-shrink-0 object-contain">
         <div class="flex-1 min-w-0 overflow-hidden">
           <div class="text-white font-bold text-base group-hover:text-forest-400 transition-colors">RESULTS</div>
