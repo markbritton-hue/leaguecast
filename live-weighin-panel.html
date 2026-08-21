@@ -89,6 +89,10 @@
           const openSnap = await db.collection('tournaments').where('status', '==', 'open').limit(1).get();
           let tDoc = openSnap.docs[0];
           if (!tDoc) {
+            const closedSnap = await db.collection('tournaments').where('status', '==', 'closed').orderBy('closedAt', 'desc').limit(1).get();
+            tDoc = closedSnap.docs[0];
+          }
+          if (!tDoc) {
             const allSnap = await db.collection('tournaments').orderBy('date', 'desc').limit(1).get();
             tDoc = allSnap.docs[0];
           }
