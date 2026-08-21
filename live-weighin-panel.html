@@ -111,6 +111,13 @@
           setInterval(() => location.reload(), 30000);
         },
 
+        isClosedTournamentNight() {
+          if (!this.tournament || this.tournament.status !== 'closed' || !this.tournament.date) return false;
+          const d = this.tournament.date.toDate ? this.tournament.date.toDate() : new Date(this.tournament.date);
+          const now = new Date();
+          return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+        },
+
         buildRanked(weighins) {
           const weighinByTeam = {};
           weighins.forEach(w => { weighinByTeam[w.teamId] = w; });
@@ -122,7 +129,9 @@
             bigFish: weighinByTeam[t.id].bigFish || weighinByTeam[t.id].bigBassWeight || 0
           })).sort((a, b) => b.totalWeight - a.totalWeight || b.bigFish - a.bigFish);
 
-          this.ranked = assignRanks(withWeighin);
+          let ranked = assignRanks(withWeighin);
+          if (this.isClosedTournamentNight()) ranked = ranked.slice(0, 5);
+          this.ranked = ranked;
         }
       }));
     });
