@@ -246,6 +246,7 @@
         tournament: null,
         teams: [],
         checkinMap: {},
+        eventsCountMap: {},
         showModal: false,
         activeTeam: null,
         existingCheckinId: null,
@@ -269,16 +270,28 @@
           this.tournamentId = params.get('tournament');
           if (!this.tournamentId) { this.loading = false; return; }
 
-          const [tSnap, teamsSnap, checkinsSnap] = await Promise.all([
+          const [tSnap, teamsSnap, checkinsSnap, allCheckinsSnap] = await Promise.all([
             db.collection('tournaments').doc(this.tournamentId).get(),
             db.collection('teams').get(),
-            db.collection('checkins').where('tournamentId', '==', this.tournamentId).get()
+            db.collection('checkins').where('tournamentId', '==', this.tournamentId).get(),
+            db.collection('checkins').get()
           ]);
 
           if (!tSnap.exists) { this.loading = false; return; }
           this.tournament = { id: tSnap.id, ...tSnap.data() };
+
+          const eventsCountMap = {};
+          allCheckinsSnap.docs.forEach(d => {
+            const c = d.data();
+            if (c.checkedIn) eventsCountMap[c.teamId] = (eventsCountMap[c.teamId] || 0) + 1;
+          });
+          this.eventsCountMap = eventsCountMap;
+
           this.teams = teamsSnap.docs.map(d => ({ id: d.id, ...d.data() }))
-            .sort((a, b) => a.teamName.localeCompare(b.teamName));
+            .sort((a, b) => {
+              const diff = (eventsCountMap[b.id] || 0) - (eventsCountMap[a.id] || 0);
+              return diff !== 0 ? diff : a.teamName.localeCompare(b.teamName);
+            });
 
           const map = {};
           checkinsSnap.docs.forEach(d => { map[d.data().teamId] = { id: d.id, ...d.data() }; });
