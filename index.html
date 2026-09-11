@@ -213,35 +213,149 @@
       <!-- Podium -->
       <div x-show="leaderboard.length >= 3" class="space-y-3 mb-6">
         <template x-if="leaderboard.length > 0">
-          <div class="bg-amber-500/20 border border-amber-500/40 rounded-xl p-4 flex items-center gap-4">
-            <img src="goldfish-trophy1.png" alt="1st Place" class="w-20 h-20 sm:w-28 sm:h-28 flex-shrink-0 object-contain">
-            <div class="flex-1 min-w-0 overflow-hidden">
-              <div class="text-xs text-amber-400 font-bold uppercase tracking-wider">1st Place</div>
-              <div class="text-white font-bold text-sm sm:text-lg leading-tight mt-1" x-text="leaderboard[0]?.team?.angler1?.name + ' & ' + leaderboard[0]?.team?.angler2?.name"></div>
-              <div class="text-amber-400 font-black text-2xl sm:text-3xl mt-2"
-                x-text="leaderboard[0]?.totalWeight.toFixed(3) + ' lbs'"></div>
+          <div class="bg-amber-500/20 border border-amber-500/40 rounded-xl overflow-hidden">
+            <button @click="leaderboard[0].expanded = !leaderboard[0].expanded"
+              class="w-full flex items-center gap-4 p-4 text-left hover:bg-amber-500/10 transition-colors">
+              <img src="goldfish-trophy1.png" alt="1st Place" class="w-20 h-20 sm:w-28 sm:h-28 flex-shrink-0 object-contain">
+              <div class="flex-1 min-w-0 overflow-hidden">
+                <div class="text-xs text-amber-400 font-bold uppercase tracking-wider">1st Place</div>
+                <div class="text-white font-bold text-sm sm:text-lg leading-tight mt-1" x-text="leaderboard[0]?.team?.angler1?.name + ' & ' + leaderboard[0]?.team?.angler2?.name"></div>
+                <div class="text-amber-400 font-black text-2xl sm:text-3xl mt-2"
+                  x-text="leaderboard[0]?.totalWeight.toFixed(3) + ' lbs'"></div>
+              </div>
+              <span class="text-amber-400/70 text-sm self-start" x-text="leaderboard[0]?.expanded ? '▲' : '▼'"></span>
+            </button>
+            <div x-show="leaderboard[0]?.expanded" x-transition class="border-t border-amber-500/30">
+              <div class="px-4 py-2 bg-navy-900/50">
+                <div class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Tournament Breakdown</div>
+                <template x-for="t in tournaments.filter(t => t.status === 'closed' && getTournamentWeighin(leaderboard[0].team.id, t.id))" :key="t.id">
+                  <div class="flex items-center justify-between py-2 border-b border-navy-700/40 last:border-0">
+                    <div class="min-w-0">
+                      <div class="text-sm text-slate-300 font-semibold truncate" x-text="t.name"></div>
+                      <div class="text-xs text-slate-600" x-text="formatDate(t.date)"></div>
+                      <div class="text-xs text-amber-400 font-bold mt-0.5"
+                        x-show="getTournamentWeighin(leaderboard[0].team.id, t.id)"
+                        x-text="getTournamentPlace(leaderboard[0].team.id, t.id)"></div>
+                    </div>
+                    <div class="flex items-center gap-4 flex-shrink-0 ml-3">
+                      <template x-if="getTournamentWeighin(leaderboard[0].team.id, t.id)">
+                        <div class="text-right">
+                          <div class="text-sm font-bold text-forest-400"
+                            x-text="getTournamentWeighinWeight(leaderboard[0].team.id, t.id)"></div>
+                          <div class="text-xs text-amber-400"
+                            x-show="getTournamentWeighin(leaderboard[0].team.id, t.id) && getTournamentWeighin(leaderboard[0].team.id, t.id).bigFish > 0"
+                            x-text="getTournamentWeighinBigBass(leaderboard[0].team.id, t.id)"></div>
+                          <div class="text-xs text-slate-500 flex items-center gap-1">
+                            <img src="icons/tournament.webp" alt="Fish" class="w-3 h-3 object-contain">
+                            <span x-text="(getTournamentWeighin(leaderboard[0].team.id, t.id).fishCount || 0) + ' fish'"></span>
+                          </div>
+                        </div>
+                      </template>
+                      <template x-if="!getTournamentWeighin(leaderboard[0].team.id, t.id)">
+                        <span class="text-xs text-slate-600 italic">DNW</span>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+              </div>
             </div>
           </div>
         </template>
         <template x-if="leaderboard.length > 1">
-          <div class="bg-slate-600/30 border border-slate-600/50 rounded-xl p-4 flex items-center gap-4">
-            <img src="trophy-fish-award2.png" alt="2nd Place" class="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 object-contain">
-            <div class="flex-1 min-w-0 overflow-hidden">
-              <div class="text-xs text-slate-400 font-bold uppercase tracking-wider">2nd Place</div>
-              <div class="text-slate-100 font-bold text-sm sm:text-lg leading-tight mt-1" x-text="leaderboard[1]?.team?.angler1?.name + ' & ' + leaderboard[1]?.team?.angler2?.name"></div>
-              <div class="text-slate-300 font-black text-xl sm:text-2xl mt-2"
-                x-text="leaderboard[1]?.totalWeight.toFixed(3) + ' lbs'"></div>
+          <div class="bg-slate-600/30 border border-slate-600/50 rounded-xl overflow-hidden">
+            <button @click="leaderboard[1].expanded = !leaderboard[1].expanded"
+              class="w-full flex items-center gap-4 p-4 text-left hover:bg-slate-600/20 transition-colors">
+              <img src="trophy-fish-award2.png" alt="2nd Place" class="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 object-contain">
+              <div class="flex-1 min-w-0 overflow-hidden">
+                <div class="text-xs text-slate-400 font-bold uppercase tracking-wider">2nd Place</div>
+                <div class="text-slate-100 font-bold text-sm sm:text-lg leading-tight mt-1" x-text="leaderboard[1]?.team?.angler1?.name + ' & ' + leaderboard[1]?.team?.angler2?.name"></div>
+                <div class="text-slate-300 font-black text-xl sm:text-2xl mt-2"
+                  x-text="leaderboard[1]?.totalWeight.toFixed(3) + ' lbs'"></div>
+              </div>
+              <span class="text-slate-400/70 text-sm self-start" x-text="leaderboard[1]?.expanded ? '▲' : '▼'"></span>
+            </button>
+            <div x-show="leaderboard[1]?.expanded" x-transition class="border-t border-slate-600/40">
+              <div class="px-4 py-2 bg-navy-900/50">
+                <div class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Tournament Breakdown</div>
+                <template x-for="t in tournaments.filter(t => t.status === 'closed' && getTournamentWeighin(leaderboard[1].team.id, t.id))" :key="t.id">
+                  <div class="flex items-center justify-between py-2 border-b border-navy-700/40 last:border-0">
+                    <div class="min-w-0">
+                      <div class="text-sm text-slate-300 font-semibold truncate" x-text="t.name"></div>
+                      <div class="text-xs text-slate-600" x-text="formatDate(t.date)"></div>
+                      <div class="text-xs text-amber-400 font-bold mt-0.5"
+                        x-show="getTournamentWeighin(leaderboard[1].team.id, t.id)"
+                        x-text="getTournamentPlace(leaderboard[1].team.id, t.id)"></div>
+                    </div>
+                    <div class="flex items-center gap-4 flex-shrink-0 ml-3">
+                      <template x-if="getTournamentWeighin(leaderboard[1].team.id, t.id)">
+                        <div class="text-right">
+                          <div class="text-sm font-bold text-forest-400"
+                            x-text="getTournamentWeighinWeight(leaderboard[1].team.id, t.id)"></div>
+                          <div class="text-xs text-amber-400"
+                            x-show="getTournamentWeighin(leaderboard[1].team.id, t.id) && getTournamentWeighin(leaderboard[1].team.id, t.id).bigFish > 0"
+                            x-text="getTournamentWeighinBigBass(leaderboard[1].team.id, t.id)"></div>
+                          <div class="text-xs text-slate-500 flex items-center gap-1">
+                            <img src="icons/tournament.webp" alt="Fish" class="w-3 h-3 object-contain">
+                            <span x-text="(getTournamentWeighin(leaderboard[1].team.id, t.id).fishCount || 0) + ' fish'"></span>
+                          </div>
+                        </div>
+                      </template>
+                      <template x-if="!getTournamentWeighin(leaderboard[1].team.id, t.id)">
+                        <span class="text-xs text-slate-600 italic">DNW</span>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+              </div>
             </div>
           </div>
         </template>
         <template x-if="leaderboard.length > 2">
-          <div class="bg-orange-700/20 border border-orange-700/30 rounded-xl p-4 flex items-center gap-4">
-            <img src="fish-trophy3.png" alt="3rd Place" class="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 object-contain">
-            <div class="flex-1 min-w-0 overflow-hidden">
-              <div class="text-xs text-orange-400 font-bold uppercase tracking-wider">3rd Place</div>
-              <div class="text-slate-100 font-bold text-sm sm:text-lg leading-tight mt-1" x-text="leaderboard[2]?.team?.angler1?.name + ' & ' + leaderboard[2]?.team?.angler2?.name"></div>
-              <div class="text-orange-300 font-black text-xl sm:text-2xl mt-2"
-                x-text="leaderboard[2]?.totalWeight.toFixed(3) + ' lbs'"></div>
+          <div class="bg-orange-700/20 border border-orange-700/30 rounded-xl overflow-hidden">
+            <button @click="leaderboard[2].expanded = !leaderboard[2].expanded"
+              class="w-full flex items-center gap-4 p-4 text-left hover:bg-orange-700/10 transition-colors">
+              <img src="fish-trophy3.png" alt="3rd Place" class="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 object-contain">
+              <div class="flex-1 min-w-0 overflow-hidden">
+                <div class="text-xs text-orange-400 font-bold uppercase tracking-wider">3rd Place</div>
+                <div class="text-slate-100 font-bold text-sm sm:text-lg leading-tight mt-1" x-text="leaderboard[2]?.team?.angler1?.name + ' & ' + leaderboard[2]?.team?.angler2?.name"></div>
+                <div class="text-orange-300 font-black text-xl sm:text-2xl mt-2"
+                  x-text="leaderboard[2]?.totalWeight.toFixed(3) + ' lbs'"></div>
+              </div>
+              <span class="text-orange-400/70 text-sm self-start" x-text="leaderboard[2]?.expanded ? '▲' : '▼'"></span>
+            </button>
+            <div x-show="leaderboard[2]?.expanded" x-transition class="border-t border-orange-700/30">
+              <div class="px-4 py-2 bg-navy-900/50">
+                <div class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Tournament Breakdown</div>
+                <template x-for="t in tournaments.filter(t => t.status === 'closed' && getTournamentWeighin(leaderboard[2].team.id, t.id))" :key="t.id">
+                  <div class="flex items-center justify-between py-2 border-b border-navy-700/40 last:border-0">
+                    <div class="min-w-0">
+                      <div class="text-sm text-slate-300 font-semibold truncate" x-text="t.name"></div>
+                      <div class="text-xs text-slate-600" x-text="formatDate(t.date)"></div>
+                      <div class="text-xs text-amber-400 font-bold mt-0.5"
+                        x-show="getTournamentWeighin(leaderboard[2].team.id, t.id)"
+                        x-text="getTournamentPlace(leaderboard[2].team.id, t.id)"></div>
+                    </div>
+                    <div class="flex items-center gap-4 flex-shrink-0 ml-3">
+                      <template x-if="getTournamentWeighin(leaderboard[2].team.id, t.id)">
+                        <div class="text-right">
+                          <div class="text-sm font-bold text-forest-400"
+                            x-text="getTournamentWeighinWeight(leaderboard[2].team.id, t.id)"></div>
+                          <div class="text-xs text-amber-400"
+                            x-show="getTournamentWeighin(leaderboard[2].team.id, t.id) && getTournamentWeighin(leaderboard[2].team.id, t.id).bigFish > 0"
+                            x-text="getTournamentWeighinBigBass(leaderboard[2].team.id, t.id)"></div>
+                          <div class="text-xs text-slate-500 flex items-center gap-1">
+                            <img src="icons/tournament.webp" alt="Fish" class="w-3 h-3 object-contain">
+                            <span x-text="(getTournamentWeighin(leaderboard[2].team.id, t.id).fishCount || 0) + ' fish'"></span>
+                          </div>
+                        </div>
+                      </template>
+                      <template x-if="!getTournamentWeighin(leaderboard[2].team.id, t.id)">
+                        <span class="text-xs text-slate-600 italic">DNW</span>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+              </div>
             </div>
           </div>
         </template>
