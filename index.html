@@ -471,6 +471,7 @@
           <div class="text-white font-bold text-sm leading-tight" x-text="seasonBigBassLeader?.team?.teamName"></div>
           <div class="text-2xl font-black text-amber-400 mt-1" x-text="seasonBigBassLeader?.biggestBass.toFixed(3) + ' lbs'"></div>
           <div class="text-slate-400 text-sm mt-1">Season Big Bass</div>
+          <div x-show="seasonBigBassLeader?.biggestBassTournament?.locationName" class="text-slate-500 text-xs mt-0.5" x-text="seasonBigBassLeader?.biggestBassTournament?.locationName"></div>
         </div>
         <div x-show="seasonWinsLeader" class="bg-navy-800/80 border border-navy-700 rounded-xl p-4 text-center backdrop-blur-sm">
           <img src="goldfish-trophy1.png" alt="Most Wins" class="w-8 h-8 mx-auto mb-1 object-contain">
@@ -501,7 +502,7 @@
 
         const teamPoints = {};
         teams.forEach(t => {
-          teamPoints[t.id] = { team: t, totalWeight: 0, totalPoints: 0, wins: 0, biggestBass: 0, tournamentsEntered: 0 };
+          teamPoints[t.id] = { team: t, totalWeight: 0, totalPoints: 0, wins: 0, biggestBass: 0, biggestBassTournament: null, tournamentsEntered: 0 };
         });
 
         tournaments.forEach(tournament => {
@@ -517,7 +518,10 @@
 
             // Track biggest bass ever caught by this team
             const bass = getBigFish(w);
-            if (bass > teamPoints[w.teamId].biggestBass) teamPoints[w.teamId].biggestBass = bass;
+            if (bass > teamPoints[w.teamId].biggestBass) {
+              teamPoints[w.teamId].biggestBass = bass;
+              teamPoints[w.teamId].biggestBassTournament = tournament;
+            }
 
             // Points: first non-tied position
             const firstTiedIdx = tWeighins.findIndex(x =>
