@@ -466,6 +466,18 @@
           <div class="text-2xl font-black text-amber-400" x-text="totalLbsCaught.toFixed(3) + ' lbs'"></div>
           <div class="text-slate-400 text-sm mt-1">Total Weight</div>
         </div>
+        <div x-show="seasonBigBassLeader" class="bg-navy-800/80 border border-navy-700 rounded-xl p-4 text-center backdrop-blur-sm">
+          <div class="text-3xl mb-1">🐟</div>
+          <div class="text-white font-bold text-sm leading-tight" x-text="seasonBigBassLeader?.team?.teamName"></div>
+          <div class="text-2xl font-black text-amber-400 mt-1" x-text="seasonBigBassLeader?.biggestBass.toFixed(3) + ' lbs'"></div>
+          <div class="text-slate-400 text-sm mt-1">Season Big Bass</div>
+        </div>
+        <div x-show="seasonWinsLeader" class="bg-navy-800/80 border border-navy-700 rounded-xl p-4 text-center backdrop-blur-sm">
+          <img src="goldfish-trophy1.png" alt="Most Wins" class="w-8 h-8 mx-auto mb-1 object-contain">
+          <div class="text-white font-bold text-sm leading-tight" x-text="seasonWinsLeader?.team?.teamName"></div>
+          <div class="text-2xl font-black text-amber-400 mt-1" x-text="seasonWinsLeader?.wins + (seasonWinsLeader?.wins === 1 ? ' Win' : ' Wins')"></div>
+          <div class="text-slate-400 text-sm mt-1">Most 1st Place Finishes</div>
+        </div>
       </div>
     </div>
 
@@ -665,6 +677,18 @@
 
         get totalLbsCaught() {
           return this.weighins.reduce((sum, w) => sum + (w.totalWeight || 0), 0);
+        },
+
+        get seasonBigBassLeader() {
+          const withBass = this.leaderboard.filter(e => e.biggestBass > 0);
+          if (withBass.length === 0) return null;
+          return withBass.reduce((best, e) => e.biggestBass > best.biggestBass ? e : best);
+        },
+
+        get seasonWinsLeader() {
+          const withWins = this.leaderboard.filter(e => e.wins > 0);
+          if (withWins.length === 0) return null;
+          return withWins.reduce((best, e) => e.wins > best.wins ? e : best);
         }
       }));
     });
