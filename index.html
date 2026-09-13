@@ -244,7 +244,7 @@
                             x-text="getTournamentWeighinWeight(leaderboard[0].team.id, t.id)"></div>
                           <div class="text-xs text-amber-400"
                             x-show="getTournamentWeighin(leaderboard[0].team.id, t.id) && getTournamentWeighin(leaderboard[0].team.id, t.id).bigFish > 0"
-                            x-text="getTournamentWeighinBigBass(leaderboard[0].team.id, t.id)"></div>
+                            x-text="getTournamentWeighinBigBass(leaderboard[0].team.id, t.id) + (isTournamentBigBassWinner(leaderboard[0].team.id, t.id) ? ' 🏆 Big Bass' : '')"></div>
                           <div class="text-xs text-slate-500 flex items-center gap-1">
                             <img src="icons/tournament.webp" alt="Fish" class="w-3 h-3 object-contain">
                             <span x-text="(getTournamentWeighin(leaderboard[0].team.id, t.id).fishCount || 0) + ' fish'"></span>
@@ -293,7 +293,7 @@
                             x-text="getTournamentWeighinWeight(leaderboard[1].team.id, t.id)"></div>
                           <div class="text-xs text-amber-400"
                             x-show="getTournamentWeighin(leaderboard[1].team.id, t.id) && getTournamentWeighin(leaderboard[1].team.id, t.id).bigFish > 0"
-                            x-text="getTournamentWeighinBigBass(leaderboard[1].team.id, t.id)"></div>
+                            x-text="getTournamentWeighinBigBass(leaderboard[1].team.id, t.id) + (isTournamentBigBassWinner(leaderboard[1].team.id, t.id) ? ' 🏆 Big Bass' : '')"></div>
                           <div class="text-xs text-slate-500 flex items-center gap-1">
                             <img src="icons/tournament.webp" alt="Fish" class="w-3 h-3 object-contain">
                             <span x-text="(getTournamentWeighin(leaderboard[1].team.id, t.id).fishCount || 0) + ' fish'"></span>
@@ -342,7 +342,7 @@
                             x-text="getTournamentWeighinWeight(leaderboard[2].team.id, t.id)"></div>
                           <div class="text-xs text-amber-400"
                             x-show="getTournamentWeighin(leaderboard[2].team.id, t.id) && getTournamentWeighin(leaderboard[2].team.id, t.id).bigFish > 0"
-                            x-text="getTournamentWeighinBigBass(leaderboard[2].team.id, t.id)"></div>
+                            x-text="getTournamentWeighinBigBass(leaderboard[2].team.id, t.id) + (isTournamentBigBassWinner(leaderboard[2].team.id, t.id) ? ' 🏆 Big Bass' : '')"></div>
                           <div class="text-xs text-slate-500 flex items-center gap-1">
                             <img src="icons/tournament.webp" alt="Fish" class="w-3 h-3 object-contain">
                             <span x-text="(getTournamentWeighin(leaderboard[2].team.id, t.id).fishCount || 0) + ' fish'"></span>
@@ -430,7 +430,7 @@
                             x-text="getTournamentWeighinWeight(entry.team.id, t.id)"></div>
                           <div class="text-xs text-amber-400"
                             x-show="getTournamentWeighin(entry.team.id, t.id) && getTournamentWeighin(entry.team.id, t.id).bigFish > 0"
-                            x-text="getTournamentWeighinBigBass(entry.team.id, t.id)"></div>
+                            x-text="getTournamentWeighinBigBass(entry.team.id, t.id) + (isTournamentBigBassWinner(entry.team.id, t.id) ? ' 🏆 Big Bass' : '')"></div>
                           <div class="text-xs text-slate-500 flex items-center gap-1">
                             <img src="icons/tournament.webp" alt="Fish" class="w-3 h-3 object-contain">
                             <span x-text="(getTournamentWeighin(entry.team.id, t.id).fishCount || 0) + ' fish'"></span>
@@ -644,6 +644,16 @@
           if (!w || !w.bigFish && !w.bigBassWeight && !w.bigBassLbs) return '';
           const bass = w.bigFish || w.bigBassWeight || (w.bigBassLbs ? w.bigBassLbs + (w.bigBassOz || 0) / 16 : 0);
           return `🐟 ${bass.toFixed(3)} lbs`;
+        },
+
+        isTournamentBigBassWinner(teamId, tournamentId) {
+          const w = this.getTournamentWeighin(teamId, tournamentId);
+          if (!w) return false;
+          const bass = getBigFish(w);
+          if (bass <= 0) return false;
+          const tWeighins = this.weighins.filter(x => x.tournamentId === tournamentId);
+          const maxBass = Math.max(...tWeighins.map(getBigFish));
+          return maxBass > 0 && bass === maxBass;
         },
 
         getTournamentPlace(teamId, tournamentId) {
